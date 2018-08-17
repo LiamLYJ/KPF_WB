@@ -6,7 +6,6 @@ __pycache__/
 *.ARW
 *.JPG
 *.csv
-*.txt
 *.PNG
 *.tiff
 *.DNG
