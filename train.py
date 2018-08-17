@@ -12,7 +12,7 @@ import data_provider
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('batch_size', 2, 'The number of images in each batch.')
+flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
@@ -21,7 +21,7 @@ flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
 
 
-flags.DEFINE_string('dataset_dir', './dataset', '')
+flags.DEFINE_string('dataset_dir', '/home/lyj/Downloads/Sony/preprocessed', '')
 flags.DEFINE_string('dataset_file_name', './tmp.txt','')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
@@ -29,6 +29,7 @@ flags.DEFINE_integer('max_number_of_steps', 100000000,
                      'The maximum number of gradient steps.')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
+flags.DEFINE_integer('save_iter', 500, 'save iter inter')
 
 FLAGS = flags.FLAGS
 
@@ -39,8 +40,8 @@ def train(FLAGS):
     height = width = FLAGS.patch_size
     final_W = FLAGS.final_W
     final_K = FLAGS.final_K
-    dataset_dir = os.path.join(FLAGS.dataset_dir, 'train')
-    dataset_file_name = os.path.join(FLAGS.dataset_dir, FLAGS.dataset_file_name)
+    dataset_dir = os.path.join(FLAGS.dataset_dir)
+    dataset_file_name = FLAGS.dataset_file_name
     input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
                                                      batch_size, height, width, channel = final_W)
 
@@ -62,6 +63,7 @@ def train(FLAGS):
     # summaies
     input_image_sum = tf.summary.image('input_image', input_image)
     gt_image_sum = tf.summary.image('gt_image', gt_image)
+    predict_image_sum = tf.summary.image('predict_image', predict_image)
     total_loss_sum = tf.summary.scalar('total_loss', total_loss)
 
     sum_total = tf.summary.merge_all()
@@ -101,7 +103,7 @@ def train(FLAGS):
             if i_step % 10 == 0:
                 print ('Step', i, 'loss =', loss)
 
-            if i % 50 == 0:
+            if i % FLAGS.save_iter == 0:
                 print ('Saving ckpt at step', i)
                 saver.save(sess, FLAGS.train_log_dir + 'model.ckpt', global_step=i)
 

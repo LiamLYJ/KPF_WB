@@ -22,3 +22,5 @@ data/
 models
 dataset/
 logs_tmp
+._.DS_Store
+check_dump/
