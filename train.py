@@ -15,7 +15,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
-    'patch_size', 128, 'The height/width of images in each batch.')
+    'patch_size', 64, 'The height/width of images in each batch.')
 
 flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
@@ -27,7 +27,7 @@ flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
 flags.DEFINE_integer('max_number_of_steps', 100000000,
                      'The maximum number of gradient steps.')
-flags.DEFINE_integer('final_K', 5, 'size of filter')
+flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_integer('save_iter', 500, 'save iter inter')
 

@@ -26,7 +26,8 @@ def batch_down2(img):
 
 # Loss
 def gradient(imgs):
-    return tf.stack([.5*(imgs[..., 1:, :-1]-imgs[..., :-1, :-1]), .5*(imgs[..., :-1, 1:]-imgs[..., :-1, :-1])], axis=-1)
+    return tf.stack([.5*(imgs[..., 1:, :-1,:]-imgs[..., :-1, :-1,:]),
+                     .5*(imgs[..., :-1, 1:,:]-imgs[..., :-1, :-1,:])], axis=-1)
 
 
 def gradient_loss(guess, truth):

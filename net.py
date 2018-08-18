@@ -13,15 +13,13 @@ def convolve(img_stack, filts, final_K, final_W):
         filts, [fsh[0], fsh[1], fsh[2], final_K ** 2 * initial_W, final_W])
 
     kpad = final_K//2
-    # imgs = tf.pad(img_stack, [[0, 0], [kpad, kpad], [kpad, kpad], [0, 0]])
+    imgs = tf.pad(img_stack, [[0, 0], [kpad, kpad], [kpad, kpad], [0, 0]])
     ish = tf.shape(img_stack)
     img_stack = []
-    # for i in range(final_K):
-    #     for j in range(final_K):
-    #         img_stack.append(
-    #             imgs[:, i:tf.shape(imgs)[1]-2*kpad+i, j:tf.shape(imgs)[2]-2*kpad+j, :])
-    for _ in range(final_K**2):
-        img_stack.append(image)
+    for i in range(final_K):
+        for j in range(final_K):
+            img_stack.append(
+                imgs[:, i:tf.shape(imgs)[1]-2*kpad+i, j:tf.shape(imgs)[2]-2*kpad+j, :])
     img_stack = tf.stack(img_stack, axis=-2)
     img_stack = tf.reshape(
         img_stack, [ish[0], ish[1], ish[2], final_K**2 * initial_W, 1])
