@@ -1,6 +1,42 @@
 import numpy as np
 import tensorflow as tf
 slim = tf.contrib.slim
+import random
+
+# mimic a multi_source
+def cut_and_concat(img_0,img_1,img_2,img_3, height, width, cut_range, coin):
+    if coin == 0:
+        # vertical cut & concat
+        height_0 = tf.cast(height * cut_range, tf.int32)
+        height_1 = height - height_0
+
+        offset_height_0 = tf.cast(tf.random_uniform([],0,(1-cut_range)) * height , tf.int32)
+        crop_0 = tf.image.crop_to_bounding_box(img_0,
+                offset_height=offset_height_0, offset_width=0,target_width=width,target_height=height_0)
+        crop_2 = tf.image.crop_to_bounding_box(img_2,
+                offset_height=offset_height_0, offset_width=0,target_width=width,target_height=height_0)
+        offset_height_1 = tf.cast(tf.random_uniform([],0,cut_range) * height , tf.int32)
+        crop_1 = tf.image.crop_to_bounding_box(img_1,
+                offset_height=offset_height_1, offset_width=0,target_width=width,target_height=height_1)
+        crop_3 = tf.image.crop_to_bounding_box(img_3,
+                offset_height=offset_height_1, offset_width=0,target_width=width,target_height=height_1)
+        return tf.concat([crop_0, crop_1], axis = 0), tf.concat([crop_2, crop_3], axis = 0)
+    else:
+        # horizontal cut & concat
+        width_0 = tf.cast(width * cut_range, tf.int32)
+        width_1 = width - width_0
+
+        offset_width_0 = tf.cast(tf.random_uniform([],0,(1-cut_range)) * width , tf.int32)
+        crop_0 = tf.image.crop_to_bounding_box(img_0,
+                offset_height=0, offset_width=offset_width_0, target_width=width_0,target_height=height)
+        crop_2 = tf.image.crop_to_bounding_box(img_2,
+                offset_height=0, offset_width=offset_width_0, target_width=width_0,target_height=height)
+        offset_width_1 = tf.cast(tf.random_uniform([],0,cut_range) * width , tf.int32)
+        crop_1 = tf.image.crop_to_bounding_box(img_1,
+                offset_height=0, offset_width=offset_width_1, target_width=width_1,target_height=height)
+        crop_3 = tf.image.crop_to_bounding_box(img_3,
+                offset_height=0, offset_width=offset_width_1, target_width=width_1,target_height=height)
+        return tf.concat([crop_0, crop_1], axis =1 ), tf.concat([crop_2, crop_3], axis =1 )
 
 
 def sRGBforward(x):

@@ -1,7 +1,7 @@
 import os
 
-folder = '/Users/lyj/Desktop/check_rggb/check_0'
-out_file = './tmp.txt'
+folder = '/Users/lyj/Desktop/check_rggb/check_1'
+out_file = './tmp_test.txt'
 
 with open(out_file, 'w') as out_file:
     for root, dirs, files in os.walk(folder):

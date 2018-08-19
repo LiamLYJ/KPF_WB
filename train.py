@@ -15,7 +15,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
-    'patch_size', 64, 'The height/width of images in each batch.')
+    'patch_size', 128, 'The height/width of images in each batch.')
 
 flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
@@ -51,6 +51,11 @@ def train(FLAGS):
     gs = tf.Variable(0, name='global_step', trainable=False)
 
     # compute loss
+    presh = tf.shape(predict_image)
+    gtsh = tf.shape(gt_image)
+    predict_image = tf.cond(tf.less(presh[1], gtsh[1]),
+                lambda: tf.image.resize_images(predict_image, [gtsh[1], gtsh[2]], method = tf.image.ResizeMethod.BILINEAR),
+                lambda: predict_image)
     print ('predict_image shape: ', predict_image.shape)
     predict_image_srgb = sRGBforward(predict_image)
     gt_image_srgb = sRGBforward(gt_image)
@@ -61,7 +66,7 @@ def train(FLAGS):
     total_loss = slim.losses.get_total_loss()
 
     # summaies
-    filters_sum = tf.summary.image('filters', filters)
+    # filters_sum = tf.summary.image('filters', filters)
     input_image_sum = tf.summary.image('input_image', input_image)
     gt_image_sum = tf.summary.image('gt_image', gt_image)
     predict_image_sum = tf.summary.image('predict_image', predict_image)

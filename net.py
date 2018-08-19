@@ -6,9 +6,11 @@ from tf_utils import *
 
 def convolve(img_stack, filts, final_K, final_W):
     initial_W = img_stack.get_shape().as_list()[-1]
-
+    imgsh = tf.shape(img_stack)
     fsh = tf.shape(filts)
-    # print ('fsh: ', fsh)
+    filts = tf.reshape(filts, [fsh[0],fsh[1],fsh[2],-1])
+    img_stack = tf.cond(tf.less(fsh[1], imgsh[1]), lambda: batch_down2(img_stack), lambda: img_stack)
+    # print ('filts shape: ', filts.shape)
     filts = tf.reshape(
         filts, [fsh[0], fsh[1], fsh[2], final_K ** 2 * initial_W, final_W])
 
@@ -119,12 +121,12 @@ def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'
                 inputs = tf.layers.conv2d(
                     inputs, ch, 3, padding='same', activation=None)
 
-            else:
-                print ('Upsample')
-                inputs = tf.image.resize_images(
-                    inputs,
-                    [tf.shape(input_stack)[1], tf.shape(input_stack)[2]],
-                    method=tf.image.ResizeMethod.BILINEAR)
+            # else:
+                # print ('Upsample')
+                # inputs = tf.image.resize_images(
+                #     inputs,
+                #     [tf.shape(input_stack)[1], tf.shape(input_stack)[2]],
+                #     method=tf.image.ResizeMethod.BILINEAR)
 
             net = inputs
             if not separable:
