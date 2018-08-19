@@ -8,6 +8,7 @@ gfile = tf.gfile
 
 import net
 from tf_utils import *
+from utils import *
 import data_provider
 
 FLAGS = flags.FLAGS
@@ -17,25 +18,21 @@ flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 64, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('train_log_dir', './logs_tmp/',
+flags.DEFINE_string('ckpt_path', './logs_tmp/',
                     'Directory where to write training.')
-
-
+flags.DEFINE_string('save_dir', './save_dir', 'Directoru to save test results')
 flags.DEFINE_string('dataset_dir', '/home/lyj/Downloads/Sony/preprocessed', '')
 flags.DEFINE_string('dataset_file_name', './tmp.txt','')
-flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
-flags.DEFINE_integer('max_number_of_steps', 100000000,
-                     'The maximum number of gradient steps.')
 flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
-flags.DEFINE_integer('save_iter', 500, 'save iter inter')
 
+flags.DEFINE_integer('total_test_num', 1000, 'num of test file')
+flags.DEFINE_boolean('write_sum', False, 'if write summay in test mode')
 FLAGS = flags.FLAGS
 
 
-
-def train(FLAGS):
+def test(FLAGS):
     batch_size = FLAGS.batch_size
     height = width = FLAGS.patch_size
     final_W = FLAGS.final_W
@@ -43,22 +40,11 @@ def train(FLAGS):
     dataset_dir = os.path.join(FLAGS.dataset_dir)
     dataset_file_name = FLAGS.dataset_file_name
     input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
-                                                     batch_size, height, width, channel = final_W)
+                                                     batch_size, height, width, channel = final_W, shuffle = False)
 
     with tf.variable_scope('generator'):
         predict_image, filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=2, D=3,
                       scope='get_filted', separable=False, bonus=False)
-    gs = tf.Variable(0, name='global_step', trainable=False)
-
-    # compute loss
-    print ('predict_image shape: ', predict_image.shape)
-    predict_image_srgb = sRGBforward(predict_image)
-    gt_image_srgb = sRGBforward(gt_image)
-
-    losses = []
-    losses.append(basic_img_loss(gt_image_srgb, predict_image_srgb))
-    slim.losses.add_loss(tf.reduce_sum(tf.stack(losses)))
-    total_loss = slim.losses.get_total_loss()
 
     # summaies
     filters_sum = tf.summary.image('filters', filters)
@@ -69,25 +55,15 @@ def train(FLAGS):
 
     sum_total = tf.summary.merge_all()
 
-    # optimizer
-    g_vars = tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES, scope='generator')
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    with tf.control_dependencies(update_ops):
-        train_step_g = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate).minimize(
-            total_loss, global_step=gs, var_list=g_vars)
-
-    max_steps = FLAGS.max_number_of_steps
-
     config = tf.ConfigProto()
     with tf.Session(config=config) as sess:
 
-        writer = tf.summary.FileWriter(FLAGS.train_log_dir, sess.graph)
+        writer = tf.summary.FileWriter(FLAGS.save_dir, sess.graph)
 
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-        saver = tf.train.Saver(max_to_keep=None)
+        restorer = tf.train.Saver(max_to_keep=None)
 
         print ('Initializers variables')
         sess.run(tf.global_variables_initializer())
@@ -98,17 +74,15 @@ def train(FLAGS):
             print ('Restoring from', ckpt_path)
             saver.restore(sess, ckpt_path)
 
-
+        max_steps = FLAGS.total_test_num // batch_size
         for i_step in range(max_steps):
-            _, loss, i, sum_total_ = sess.run([train_step_g, total_loss, gs, sum_total])
-            if i_step % 10 == 0:
-                print ('Step', i, 'loss =', loss)
-
-            if i % FLAGS.save_iter == 0:
-                print ('Saving ckpt at step', i)
-                saver.save(sess, FLAGS.train_log_dir + 'model.ckpt', global_step=i)
-
-            if i % 20 == 0:
+            input_image_, gt_image_, predict_image_, sum_total_ = \
+                    sess.run([input_image, gt_image, predict_image, sum_total])
+            concat = get_concat(input_image_, gt_image_, predict_image_)
+            for batch_i in range(batch_size):
+                imsave(os.path.join(FLAGS.save_dir, '%03d_%02d.png'%(i_step,batch_i)), concat[batch_i] )
+                
+            if FLAGS.write_sum and i_step % 20 == 0:
                 writer.add_summary(sum_total_, i)
                 print ('summary saved')
 
@@ -117,10 +91,10 @@ def train(FLAGS):
 
 
 def main(_):
-    if not gfile.Exists(FLAGS.train_log_dir):
-        gfile.MakeDirs(FLAGS.train_log_dir)
+    if not gfile.Exists(FLAGS.save_dir):
+        gfile.MakeDirs(FLAGS.save_dir)
 
-    train(FLAGS)
+    test(FLAGS)
 
 
 if __name__ == '__main__':

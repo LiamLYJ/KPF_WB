@@ -32,7 +32,7 @@ def read_label_file(file):
 
 
 
-def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3):
+def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True):
     file_names, labels = read_label_file(dataset_file_name)
     file_names = [os.path.join(dataset_dir, fp) for fp in file_names]
 
@@ -40,7 +40,7 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
     labels = tf.convert_to_tensor(labels, dtype=tf.float32)
 
     file_name, label = tf.train.slice_input_producer([file_names, labels],
-                                                 shuffle=True)
+                                                 shuffle=shuffle)
     file_name = tf.read_file(file_name)
     image = tf.image.decode_png(file_name, channels=channel)
     image =  tf.image.resize_images(image, [height, width])
