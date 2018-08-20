@@ -10,23 +10,17 @@ import numpy as np
 # img_1 = io.read(file_1)
 # img_0 = color.rgb2lab(img_0)
 # img_1 = color.rgb2lab(img_1)
-img0 = np.arange(6).reshape(2,3).astype(np.float32)
-img1 = np.arange(6).reshape(2,3).astype(np.float32)
-img1[0,:] *= 2
-img1[1,:] *= 3
+img0 = np.arange(6).reshape(3,2)
+img1 = img0 * np.array([2,3])
+print (img0)
+print (img1)
 
 def f(x,img0,img1):
-    img0[0,:] *= x[0]
-    img1[1,:] *= x[1]
-    return np.sum(np.abs(img0-img1))
-print (img0, img1)
-a = optimize.fmin_cg(f,[1.0,1.0], args=(img0,img1))
+    x = np.reshape(x,-1)
+    pre_dis = x * img0
+    loss = np.sum((pre_dis - img1)**2) / 2
+    return loss
+
+# a = optimize.fmin_cg(f,[2.0,3.0], args=(img0,img1),constraints=cons)
+a = optimize.fmin(f,[1.0,1.0], args=(img0,img1))
 print (a)
-
-
-#
-# def f(x, img0,img1):
-#     return abs(img0*x - img1)
-#
-# a = optimize.fmin_cg(f,[0], args=(10,2))
-# print(a)
