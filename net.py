@@ -39,11 +39,9 @@ def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'
         initial_W = input_stack.get_shape().as_list()[-1]
         inputs = input_stack
         if not separable:
-            # ch_final = final_K ** 2 * initial_W * final_W
-            ch_final = final_K ** 2  * final_W
+            ch_final = final_K ** 2 * initial_W * final_W
         else:
-            # ch_final = final_K * 2 * initial_W * final_W
-            ch_final = final_K * 2 * final_W
+            ch_final = final_K * 2 * initial_W * final_W
         # ch = 2**(10-N)
         ch = ch0
         for d in range(D):
