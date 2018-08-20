@@ -88,7 +88,8 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
     if with_gain:
         # if use gain, it can not be ms
         assert not use_ms
-        label = tf.reshape(label, [-1]) / tf.norm(label)
+        # label = tf.reshape(label, [-1]) / tf.norm(label)
+        label = tf.reshape(label, [-1]) 
         X, Y, gt = tf.train.batch([image, image_after, label], batch_size=batch_size,
                         capacity = batch_size*8, num_threads=2)
         return X,Y,gt

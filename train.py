@@ -28,9 +28,9 @@ flags.DEFINE_integer('max_number_of_steps', 100000000,
 flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_integer('save_iter', 500, 'save iter inter')
-flags.DEFINE_integer('angular_loss_weight', 0, 'weight for angular_loss')
+flags.DEFINE_integer('angular_loss_weight', 1, 'weight for angular_loss')
 flags.DEFINE_integer('img_0_loss_weight', 1, 'weight for angular_loss')
-flags.DEFINE_integer('img_1_loss_weight', 1, 'weight for angular_loss')
+flags.DEFINE_integer('img_1_loss_weight', 0, 'weight for angular_loss')
 
 FLAGS = flags.FLAGS
 
@@ -49,7 +49,7 @@ def train(FLAGS):
     with tf.variable_scope('generator'):
         # filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=4, D=3,
         #               scope='get_filted', separable=False, bonus=False)
-        filts, filts_gain = net.convolve_net_v1(input_image, final_K, final_W, ch0=64, N=3, D=3, scope='get_filted')
+        filts, filts_gain = net.convolve_net_v1(input_image, final_K, final_W, ch0=64, N=2, D=3, scope='get_filted')
     gs = tf.Variable(0, name='global_step', trainable=False)
 
     predict_image_0 = convolve(input_image, filts, final_K, final_W)
@@ -73,7 +73,8 @@ def train(FLAGS):
     losses.append(img_loss_1)
     # arcos loss
     est_gain = get_gain_from_filter(filts_gain, final_W)
-    angular_loss = FLAGS.angular_loss_weight * get_angular_loss(est_gain, gt_gain)
+    # angular_loss = FLAGS.angular_loss_weight * get_angular_loss(est_gain, gt_gain)
+    angular_loss = FLAGS.angular_loss_weight * tf.reduce_mean(tf.square(est_gain - gt_gain))
     losses.append(angular_loss)
     slim.losses.add_loss(tf.reduce_sum(tf.stack(losses)))
     total_loss = slim.losses.get_total_loss()
@@ -124,7 +125,7 @@ def train(FLAGS):
 
         for i_step in range(max_steps):
             _, loss, i, sum_total_ = sess.run([train_step_g, total_loss, gs, sum_total])
-            if i_step % 10 == 0:
+            if i_step % 1 == 0:
                 print ('Step', i, 'loss =', loss)
 
             if i % FLAGS.save_iter == 0:
