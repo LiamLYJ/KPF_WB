@@ -33,7 +33,7 @@ def read_label_file(file):
 
 
 
-def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False):
+def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False, with_gain = False):
     file_names, labels = read_label_file(dataset_file_name)
     file_names = [os.path.join(dataset_dir, fp) for fp in file_names]
 
@@ -85,10 +85,18 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
         image =  tf.reshape(image, [height, width, channel])
         image_after = tf.reshape(image_after, [height, width, channel])
 
-    X, Y = tf.train.batch([image, image_after], batch_size=batch_size,
-                      capacity=batch_size * 8,
-                      num_threads=2)
-    return X,Y
+    if with_gain:
+        # if use gain, it can not be ms
+        assert not use_ms
+        label = tf.reshape(label, [-1]) / tf.norm(label)
+        X, Y, gt = tf.train.batch([image, image_after, label], batch_size=batch_size,
+                        capacity = batch_size*8, num_threads=2)
+        return X,Y,gt
+    else:
+        X, Y = tf.train.batch([image, image_after], batch_size=batch_size,
+                  capacity=batch_size * 8,
+                  num_threads=2)
+        return X,Y
 
 
 if __name__ == '__main__':
@@ -96,7 +104,8 @@ if __name__ == '__main__':
     dataset_file_name = 'tmp_test.txt'
     batch_size = 2
     height = width = 256
-    image, image_after = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, use_ms = True)
+    # image, image_after = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, use_ms = True)
+    image, image_after,gt = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, with_gain = True)
     save_path = './check_dump'
     if not os.path.exists(save_path):
         os.mkdir(save_path)
@@ -106,7 +115,8 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
         for i in range(4):
-            image_, image_after_ = sess.run([image, image_after])
+            # image_, image_after_ = sess.run([image, image_after])
+            image_, image_after_, gt_ = sess.run([image, image_after,gt])
             for j in range(batch_size):
                 imsave(os.path.join(save_path, '%03d_%02d_input.png'%(i,j)), image_[j])
                 imsave(os.path.join(save_path, '%03d_%02d_output.png'%(i,j)), image_after_[j])

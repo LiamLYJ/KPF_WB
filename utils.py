@@ -1,6 +1,6 @@
 import os
 import numpy as np
-
+import operator
 
 def get_concat(input,gt,est):
     concat = np.concatenate([input, gt, est], axis = 2) / 255.0
@@ -31,3 +31,40 @@ def convolve(img_stack, filts, final_K, final_W, spatial=True):
                            final_K ** 2 * initial_W, final_W])
 
     return np.sum(A * x, axis=-2)
+
+
+def compute_confidence(filts, time_std = 2, rate = 0.8):
+    filts_sh = filts.shape
+    filts = np.reshape(filts, [filts_sh[0],filts_sh[1],-1])
+    final_val = 0
+    for i in range(filts.shape[-1]):
+        matrix = filts[...,i].reshape(-1)
+        matrix_var = np.nanvar(matrix)
+        matrix_std = np.nanstd(matrix)
+
+        # find cluster in matrix
+        cluster = []
+        for index, item in enumerate(matrix):
+            low_index = matrix > (item - time_std * matrix_std)
+            tmp = matrix[low_index]
+            high_index = tmp < (item + time_std * matrix_std)
+            tmp = tmp[high_index]
+            count = len(tmp)
+            if count >= rate * len(matrix):
+                cluster.append(item)
+        # compute var regrad to cluster
+        candidate = []
+        for value in cluster:
+            candidate.append(matrix - value)
+        candidate = np.stack(candidate, axis = -1)
+        candidate = np.abs(candidate)
+        pending_matrix = np.amin(candidate, axis = -1)
+        pending_matrix_var = np.sum(pending_matrix * pending_matrix)
+        final_val += pending_matrix_var
+    return final_val
+
+if __name__ == '__main__':
+    # filts = np.random.randn(5,5,3)
+    filts = np.arange(18).reshape(3,3,2)
+    final_val = compute_confidence(filts)
+    print (final_val)

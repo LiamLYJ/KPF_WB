@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 slim = tf.contrib.slim
 import random
+import math
 
 # mimic a multi_source
 def cut_and_concat(img_0,img_1,img_2,img_3, height, width, cut_range, coin):
@@ -75,6 +76,81 @@ def basic_img_loss(img, truth):
     l1_grad = gradient_loss(img, truth)
     return l2_pixel + l1_grad
 
+
+def get_angular_loss(vec1, vec2, length_regularization=0.0, ANGULAR_LOSS = True ):
+        with tf.name_scope('angular_error'):
+            safe_v = 0.999999
+            if len(vec1.get_shape()) == 2:
+                illum_normalized = tf.nn.l2_normalize(vec1, 1)
+                _illum_normalized = tf.nn.l2_normalize(vec2, 1)
+                dot = tf.reduce_sum(illum_normalized * _illum_normalized, 1)
+                dot = tf.clip_by_value(dot, -safe_v, safe_v)
+                length_loss = tf.reduce_mean(
+                    tf.maximum(tf.log(tf.reduce_sum(vec1**2, axis=1) + 1e-7), 0))
+            else:
+                assert len(vec1.get_shape()) == 4
+                illum_normalized = tf.nn.l2_normalize(vec1, 3)
+                _illum_normalized = tf.nn.l2_normalize(vec2, 3)
+                dot = tf.reduce_sum(illum_normalized * _illum_normalized, 3)
+                dot = tf.clip_by_value(dot, -safe_v, safe_v)
+                length_loss = tf.reduce_mean(
+                    tf.maximum(tf.log(tf.reduce_sum(vec1**2, axis=3) + 1e-7), 0))
+            angle = tf.acos(dot) * (180 / math.pi)
+            
+            if ANGULAR_LOSS:
+                return tf.reduce_mean(angle) + length_loss * length_regularization
+            else:
+                dot = tf.reduce_sum(
+                    (illum_normalized - _illum_normalized)**2,
+                    axis=len(illum_normalized.get_shape()) - 1)
+                return tf.reduce_mean(dot) * 1000 + length_loss * length_regularization
+
+
+def get_gain_from_filter(filters, final_W):
+    filters_sh = tf.shape(filters)
+    filters = tf.reshape(filters, [filters_sh[0], filters_sh[1], filters_sh[2], -1, final_W])
+    gain = tf.reduce_mean(filters, axis = [1,2,3])
+    return gain
+
+
+def convolve(img_stack, filts, final_K, final_W):
+    initial_W = img_stack.get_shape().as_list()[-1]
+    imgsh = tf.shape(img_stack)
+    fsh = tf.shape(filts)
+    filts = tf.reshape(filts, [fsh[0],fsh[1],fsh[2],-1])
+    img_stack = tf.cond(tf.less(fsh[1], imgsh[1]), lambda: batch_down2(img_stack), lambda: img_stack)
+    # print ('filts shape: ', filts.shape)
+    filts = tf.reshape(
+        filts, [fsh[0], fsh[1], fsh[2], final_K ** 2 * initial_W, final_W])
+
+    kpad = final_K//2
+    imgs = tf.pad(img_stack, [[0, 0], [kpad, kpad], [kpad, kpad], [0, 0]])
+    ish = tf.shape(img_stack)
+    img_stack = []
+    for i in range(final_K):
+        for j in range(final_K):
+            img_stack.append(
+                imgs[:, i:tf.shape(imgs)[1]-2*kpad+i, j:tf.shape(imgs)[2]-2*kpad+j, :])
+    img_stack = tf.stack(img_stack, axis=-2)
+    img_stack = tf.reshape(
+        img_stack, [ish[0], ish[1], ish[2], final_K**2 * initial_W, 1])
+    # removes the final_K**2*initial_W dimension but keeps final_W
+    img_net = tf.reduce_sum(img_stack * filts, axis=-2)
+    return img_net
+
+
+def sep_convolve(img, filts, final_K, final_W):
+    pre_img = img * filts
+    return pre_img
+
+def convolve_per_layer(input_stack, filts, final_K, final_W):
+    initial_W = input_stack.get_shape().as_list()[-1]
+    img_net = []
+    for i in range(initial_W):
+        img_net.append(
+            convolve(input_stack[..., i:i+1], filts[..., i:i+1, :], final_K, final_W))
+    img_net = tf.concat(img_net, axis=-1)
+    return img_net
 
 
 

@@ -39,11 +39,9 @@ def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'
         initial_W = input_stack.get_shape().as_list()[-1]
         inputs = input_stack
         if not separable:
-            # ch_final = final_K ** 2 * initial_W * final_W
-            ch_final = final_K ** 2  * final_W
+            ch_final = final_K ** 2 * initial_W * final_W
         else:
-            # ch_final = final_K * 2 * initial_W * final_W
-            ch_final = final_K * 2 * final_W
+            ch_final = final_K * 2 * initial_W * final_W
         # ch = 2**(10-N)
         ch = ch0
         for d in range(D):
@@ -103,4 +101,58 @@ def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'
                     inputs,
                     [tf.shape(input_stack)[1], tf.shape(input_stack)[2]],
                     method=tf.image.ResizeMethod.BILINEAR)
-        return inputs
+
+            net = inputs
+            if not separable:
+                filts = tf.reshape(net, [tf.shape(net)[0], tf.shape(net)[1], tf.shape(net)[
+                                   2], final_K, final_K, initial_W, final_W])
+                img_net = convolve(input_stack, filts, final_K, final_W)
+            else:
+                filts1 = tf.reshape(net[..., :final_K * initial_W * final_W], [tf.shape(
+                    net)[0], tf.shape(net)[1], tf.shape(net)[2], final_K, 1, initial_W, final_W])
+                filts2 = tf.reshape(net[..., final_K * initial_W * final_W:], [tf.shape(
+                    net)[0], tf.shape(net)[1], tf.shape(net)[2], 1, final_K, initial_W, final_W])
+                filts = filts1 * filts2
+                img_net = convolve_aniso(
+                    input_stack, filts1, final_K, 1, final_W, layerwise=True)
+                img_net = convolve_aniso(
+                    img_net,    filts2, 1, final_K, final_W, layerwise=False)
+
+            print ('Adaptive convolution applied')
+
+            if bonus:
+                inputs = img_net
+                ch = ch_final
+                for d in range(2):
+                    print ('bonus/Post-Layer with {} channels at N={}'.format(ch, N))
+                    inputs = tf.layers.conv2d(
+                        inputs, ch, 3, padding='same', activation=tf.nn.relu)
+                ch = final_W
+                print ('bonus/Final-Layer with {} channels at N={}'.format(ch, N))
+                inputs = tf.layers.conv2d(
+                    inputs, ch, 3, padding='same', activation=None)
+                img_net = inputs
+            return img_net, filts
+
+        else:
+            print ('Post-Layer with {} channels at N={}'.format(ch, N))
+            inputs = tf.layers.conv2d(
+                inputs, ch, 3, padding='same', activation=tf.nn.relu)
+            print ('Upsample')
+            inputs = tf.image.resize_images(
+                inputs,
+                [tf.shape(input_stack)[1], tf.shape(input_stack)[2]],
+                method=tf.image.ResizeMethod.BILINEAR)
+            inputs = tf.concat([inputs, input_stack], axis=-1)
+            N = N+1
+            ch = ch // 4
+            for d in range(2):
+                print ('Post-Layer with {} channels at N={}'.format(ch, N))
+                inputs = tf.layers.conv2d(
+                    inputs, ch, 3, padding='same', activation=tf.nn.relu)
+
+            ch = final_W
+            print ('Final-Layer with {} channels at N={}'.format(ch, N))
+            inputs = tf.layers.conv2d(
+                inputs, ch, 3, padding='same', activation=None)
+            return inputs
