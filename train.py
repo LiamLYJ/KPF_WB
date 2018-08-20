@@ -19,7 +19,7 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
-flags.DEFINE_string('dataset_dir', '/home/lyj/Downloads/Sony/preprocessed', '')
+flags.DEFINE_string('dataset_dir', '/home/cpjp/lyj/Downloads/Sony/preprocessed', '')
 flags.DEFINE_string('dataset_file_name', './tmp_test.txt','')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
@@ -28,7 +28,10 @@ flags.DEFINE_integer('max_number_of_steps', 100000000,
 flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_integer('save_iter', 500, 'save iter inter')
-flags.DEFINE_integer('angular_loss_weight', 10, 'weight for angular_loss')
+flags.DEFINE_integer('angular_loss_weight', 0, 'weight for angular_loss')
+flags.DEFINE_integer('img_0_loss_weight', 1, 'weight for angular_loss')
+flags.DEFINE_integer('img_1_loss_weight', 1, 'weight for angular_loss')
+
 FLAGS = flags.FLAGS
 
 
@@ -44,43 +47,48 @@ def train(FLAGS):
                                                      batch_size, height, width, channel = final_W, with_gain = True)
 
     with tf.variable_scope('generator'):
-        filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=2, D=3,
-                      scope='get_filted', separable=False, bonus=False)
+        # filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=4, D=3,
+        #               scope='get_filted', separable=False, bonus=False)
+        filts, filts_gain = net.convolve_net_v1(input_image, final_K, final_W, ch0=64, N=3, D=3, scope='get_filted')
     gs = tf.Variable(0, name='global_step', trainable=False)
 
-    # predict_image = convolve(input_image, filters, final_K, final_W)
-    predict_image = sep_convolve(input_image, filters, final_K, final_W)
+    predict_image_0 = convolve(input_image, filts, final_K, final_W)
+    predict_image_1 = sep_convolve(input_image, filts_gain, final_K, final_W)
 
     # compute loss
     losses = []
     # pixel_wise loss
-    presh = tf.shape(predict_image)
-    gtsh = tf.shape(gt_image)
-    predict_image = tf.cond(tf.less(presh[1], gtsh[1]),
-                lambda: tf.image.resize_images(predict_image, [gtsh[1], gtsh[2]], method = tf.image.ResizeMethod.BILINEAR),
-                lambda: predict_image)
-    print ('predict_image shape: ', predict_image.shape)
-    predict_image_srgb = sRGBforward(predict_image)
+    # presh = tf.shape(predict_image)
+    # gtsh = tf.shape(gt_image)
+    # predict_image = tf.cond(tf.less(presh[1], gtsh[1]),
+    #             lambda: tf.image.resize_images(predict_image, [gtsh[1], gtsh[2]], method = tf.image.ResizeMethod.BILINEAR),
+    #             lambda: predict_image)
+    # print ('predict_image shape: ', predict_image.shape)
+    predict_image_0_srgb = sRGBforward(predict_image_0)
+    predict_image_1_srgb = sRGBforward(predict_image_1)
     gt_image_srgb = sRGBforward(gt_image)
-    img_loss = basic_img_loss(gt_image_srgb, predict_image_srgb)
-    losses.append(img_loss)
+    img_loss_0 = FLAGS.img_0_loss_weight * basic_img_loss(gt_image_srgb, predict_image_0_srgb)
+    img_loss_1 = FLAGS.img_1_loss_weight * basic_img_loss(gt_image_srgb, predict_image_1_srgb)
+    losses.append(img_loss_0)
+    losses.append(img_loss_1)
     # arcos loss
-    est_gain = get_gain_from_filter(filters, final_W)
+    est_gain = get_gain_from_filter(filts_gain, final_W)
     angular_loss = FLAGS.angular_loss_weight * get_angular_loss(est_gain, gt_gain)
     losses.append(angular_loss)
     slim.losses.add_loss(tf.reduce_sum(tf.stack(losses)))
     total_loss = slim.losses.get_total_loss()
 
     # summaies
-    filter_r_sum = tf.summary.image('filter_r', tf.expand_dims(filters[...,0], axis = -1))
-    filter_g_sum = tf.summary.image('filter_g', tf.expand_dims(filters[...,1], axis = -1))
-    filter_b_sum = tf.summary.image('filter_b', tf.expand_dims(filters[...,2], axis = -1))
+    filter_r_sum = tf.summary.image('filter_r', tf.expand_dims(filts_gain[...,0], axis = -1))
+    filter_g_sum = tf.summary.image('filter_g', tf.expand_dims(filts_gain[...,1], axis = -1))
+    filter_b_sum = tf.summary.image('filter_b', tf.expand_dims(filts_gain[...,2], axis = -1))
     input_image_sum = tf.summary.image('input_image', input_image)
     gt_image_sum = tf.summary.image('gt_image', gt_image)
-    predict_image_sum = tf.summary.image('predict_image', predict_image)
+    predict_image_sum = tf.summary.image('predict_image', predict_image_0)
     total_loss_sum = tf.summary.scalar('total_loss', total_loss)
     angular_loss_sum = tf.summary.scalar('angular_loss', angular_loss)
-    img_loss_sum = tf.summary.scalar('img_loss', img_loss)
+    img_loss_0_sum = tf.summary.scalar('img_loss_0', img_loss_0)
+    img_loss_1_sum = tf.summary.scalar('img_loss_1', img_loss_1)
 
     sum_total = tf.summary.merge_all()
 

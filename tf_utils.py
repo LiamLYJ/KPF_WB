@@ -96,7 +96,7 @@ def get_angular_loss(vec1, vec2, length_regularization=0.0, ANGULAR_LOSS = True 
                 length_loss = tf.reduce_mean(
                     tf.maximum(tf.log(tf.reduce_sum(vec1**2, axis=3) + 1e-7), 0))
             angle = tf.acos(dot) * (180 / math.pi)
-            
+
             if ANGULAR_LOSS:
                 return tf.reduce_mean(angle) + length_loss * length_regularization
             else:
@@ -108,8 +108,8 @@ def get_angular_loss(vec1, vec2, length_regularization=0.0, ANGULAR_LOSS = True 
 
 def get_gain_from_filter(filters, final_W):
     filters_sh = tf.shape(filters)
-    filters = tf.reshape(filters, [filters_sh[0], filters_sh[1], filters_sh[2], -1, final_W])
-    gain = tf.reduce_mean(filters, axis = [1,2,3])
+    filters = tf.reshape(filters, [filters_sh[0], filters_sh[1], filters_sh[2], final_W])
+    gain = tf.reduce_mean(filters, axis = [1,2])
     return gain
 
 
