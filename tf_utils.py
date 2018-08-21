@@ -77,6 +77,23 @@ def basic_img_loss(img, truth):
     return l2_pixel + l1_grad
 
 
+def filts_reg_loss(filts, input_ch, final_K, final_W, use_l1 = True):
+    filts_sh = tf.shape(filts)
+    filts = tf.reshape(filts, filts_sh[0], filts_sh[1], filts_sh[2], final_K**2, input_ch, final_W)
+    loss = 0
+    # surpress the filter not aligned
+    for i in range(input_ch):
+        for j in range(final_W):
+            if i == j :
+                continue
+            else:
+                if use_L1:
+                    loss += tf.sum(tf.abs(filts[..., i, j]))
+                else:
+                    loss += tf.sum(tf.square(filts[...,i,j]))
+    return loss
+
+
 def get_angular_loss(vec1, vec2, length_regularization=0.0, ANGULAR_LOSS = True ):
         with tf.name_scope('angular_error'):
             safe_v = 0.999999

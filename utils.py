@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import operator
+import math
 
 def get_concat(input,gt,est):
     concat = np.concatenate([input, gt, est], axis = 2) / 255.0
@@ -8,7 +9,7 @@ def get_concat(input,gt,est):
     # concat = np.clip(np.power(concat, 1/2.2), 0, 1)
     return concat
 
-def convolve(img_stack, filts, final_K, final_W, spatial=True):
+def np_convolve(img_stack, filts, final_K, final_W, spatial=True):
     noisy = img_stack
     initial_W = img_stack.shape[-1]
     kpad = final_K//2
@@ -33,7 +34,34 @@ def convolve(img_stack, filts, final_K, final_W, spatial=True):
     return np.sum(A * x, axis=-2)
 
 
-def compute_confidence(filts, time_std = 2, rate = 0.8):
+def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch):
+    img_sh = img.shape
+    input_ch = img_sh[-1]
+    h,w = img_sh[1], img_sh[2]
+    kpad = final_K // 2
+    img_pad = np.pad(img, [[0,0], [kpad, kpad], [kpad, kpad], [0,0]], mode = 'constant')
+    img_stack = []
+    for i in range(final_K):
+        for j in range(final_K):
+            img_stack.append(img_pad[:,i:h+i, j:w+j,:])
+    img_stack = np.stack(img_stack, axis = -2) #[batch, h,w, K**2 ,ch]
+    img_stack = np.reshape(img_stack, [img_sh[0], h, w, final_K**2, input_ch])
+    filts = np.reshape(filts, [img_sh[0],h,w,final_K**2, input_ch, final_W])
+    filts = np.squeeze(filts[...,sel_ch])
+    dot_results = img_stack * filts # [batch, h, w, final_K**2 , input_c]
+    dot_sel = dot_results[..., sel_ch] # [batch, h, w, final_K**2, 1]
+    dot_ref = dot_results[..., ref_ch]
+    dot_sel = np.squeeze(dot_sel)
+    dot_ref = np.squeeze(dot_ref)
+    dot_sel_sum = np.sum(dot_sel, axis = -1)
+    dot_ref_sum = np.sum(dot_ref, axis = -1)
+    batch_confidence = dot_sel_sum / dot_ref_sum # [batch , h, w]
+    batch_confidence = np.mean(np.mean(batch_confidence, axis = -1), axis = -1) # [batch,1]
+
+    return batch_confidence
+
+
+def compute_var_confidence(filts, time_std = 2, rate = 0.8):
     filts_sh = filts.shape
     filts = np.reshape(filts, [filts_sh[0],filts_sh[1],-1])
     final_val = 0
@@ -63,8 +91,23 @@ def compute_confidence(filts, time_std = 2, rate = 0.8):
         final_val += pending_matrix_var
     return final_val
 
+
+def angular_error(estimation, ground_truth):
+    return 180 * (1/math.pi) * math.acos(
+        np.clip(
+            np.dot(estimation, ground_truth) / np.linalg.norm(estimation) /
+            np.linalg.norm(ground_truth), -1, 1))
+
+
 if __name__ == '__main__':
     # filts = np.random.randn(5,5,3)
-    filts = np.arange(18).reshape(3,3,2)
-    final_val = compute_confidence(filts)
-    print (final_val)
+    # filts = np.arange(18).reshape(3,3,2)
+    # final_val = compute_confidence(filts)
+    # print (final_val)
+
+    # filts = np.arange(2*5*5*3*3*3*3).reshape(2,5,5,3*3*3,3)
+    filts = np.ones([2,5,5,3*3*3,3])
+    # img = np.arange(2*5*5*3).reshape(2,5,5,3)
+    img = np.ones([2,5,5,3])
+    val = compute_rate_confidence(filts,img,3,3,0,1)
+    print (val)
