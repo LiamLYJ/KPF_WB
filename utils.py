@@ -98,6 +98,16 @@ def angular_error(estimation, ground_truth):
             np.dot(estimation, ground_truth) / np.linalg.norm(estimation) /
             np.linalg.norm(ground_truth), -1, 1))
 
+def special_downsampling(img, scale):
+    h,w,c = img.shape
+    h_down, w_down = h // scale, w // scale
+    img_down = np.ones([h_down, w_down, c])
+    for j in range(h_down):
+        for i in range(w_down):
+            cut_out = img[j* scale: (j+1) *scale, i*scale:(i+1)*scale,:]
+            value = np.mean(np.mean(cut_out, axis = 0), axis = 0)
+            img_down[j,i,:] = value
+    return img_down
 
 if __name__ == '__main__':
     # filts = np.random.randn(5,5,3)

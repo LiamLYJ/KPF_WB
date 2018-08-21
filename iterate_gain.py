@@ -19,7 +19,9 @@ from utils import *
 file0 = 'input.png'
 file1 = 'ref.png'
 img0 = io.imread(file0)
-# img1 = io.imread(file1)
+scale = 4
+img0 = special_downsampling(img0, scale)
+img1 = io.imread(file1)
 #
 # h,w,c = img1.shape
 # img0 = cv2.resize(img0, (w,h))
@@ -40,7 +42,7 @@ img0 = io.imread(file0)
 # print (img1)
 
 
-img1 = np.array([2.578,1.0,1.7617]) * img0
+# img1 = np.array([2.578,1.0,1.7617]) * img0
 
 def f(x,img0,img1):
     x = np.reshape(x,-1)
