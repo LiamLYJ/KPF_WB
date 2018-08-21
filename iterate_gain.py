@@ -19,9 +19,16 @@ from utils import *
 file0 = 'input.png'
 file1 = 'ref.png'
 img0 = io.imread(file0)
-scale = 4
-img0 = special_downsampling(img0, scale)
-img1 = io.imread(file1)
+h,w,c = img0.shape
+img1 = cv2.resize(img0, (w //4 , h//4))
+img1 = np.clip(np.array([2.5781,1.0,1.7617]) * img1[...,::-1], 0, 255.0)
+# img0 = cv2.resize(img0, (w //2, h//2))
+img1 = special_downsampling(img1, 2)
+img0 = special_downsampling(img0, 8)
+
+# scale = 4
+# img0 = special_downsampling(img0, scale)
+# img1 = io.imread(file1)
 #
 # h,w,c = img1.shape
 # img0 = cv2.resize(img0, (w,h))
@@ -46,7 +53,7 @@ img1 = io.imread(file1)
 
 def f(x,img0,img1):
     x = np.reshape(x,-1)
-    img0 = x * img0
+    img0 = np.clip(x * img0[...,::-1], 0, 255)
     # img0 = color.rgb2lab(img0)
     # img1 = color.rgb2lab(img1)
     loss = np.sum((img0 - img1)**2) / 2
