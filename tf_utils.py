@@ -77,7 +77,7 @@ def basic_img_loss(img, truth):
     return l2_pixel + l1_grad
 
 
-def filts_reg_loss(filts, input_ch, final_K, final_W, use_l1 = True):
+def filts_reg_loss(filts, input_ch, final_K, final_W, use_l1 = False):
     filts_sh = tf.shape(filts)
     filts = tf.reshape(filts, filts_sh[0], filts_sh[1], filts_sh[2], final_K**2, input_ch, final_W)
     loss = 0
