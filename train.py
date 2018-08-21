@@ -19,7 +19,7 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
-flags.DEFINE_string('dataset_dir', '/home/cpjp/lyj/Downloads/Sony/preprocessed', '')
+flags.DEFINE_string('dataset_dir', '/home/lyj/Downloads/Sony/preprocessed', '')
 flags.DEFINE_string('dataset_file_name', './tmp.txt','')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
@@ -68,8 +68,8 @@ def train(FLAGS):
     gt_image_srgb = sRGBforward(gt_image)
     img_loss = FLAGS.img_loss_weight * basic_img_loss(gt_image_srgb, predict_image_srgb)
     losses.append(img_loss)
-    filts_reg_loss = FLAGS.filts_reg_weight * filts_reg_loss(filts, input_ch=input_ch, final_K=final_K, final_W=final_W)
-    losses.append(filts_reg_loss)
+    filts_loss = FLAGS.filts_reg_weight * filts_reg_loss(filts, input_ch=input_ch, final_K=final_K, final_W=final_W)
+    losses.append(filts_loss)
     slim.losses.add_loss(tf.reduce_sum(tf.stack(losses)))
     total_loss = slim.losses.get_total_loss()
 
@@ -91,7 +91,7 @@ def train(FLAGS):
     predict_image_sum = tf.summary.image('predict_image', predict_image)
     total_loss_sum = tf.summary.scalar('total_loss', total_loss)
     img_loss_sum = tf.summary.scalar('img_loss', img_loss)
-    filts_reg_loss_sum = tf.summary.scalar('filts_reg_loss', filts_reg_loss) 
+    filts_loss_sum = tf.summary.scalar('filts_loss', filts_loss) 
 
     sum_total = tf.summary.merge_all()
 

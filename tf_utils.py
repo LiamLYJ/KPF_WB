@@ -77,9 +77,10 @@ def basic_img_loss(img, truth):
     return l2_pixel + l1_grad
 
 
-def filts_reg_loss(filts, input_ch, final_K, final_W, use_l1 = False):
+def filts_reg_loss(filts, input_ch, final_K, final_W, use_L1 = False):
     filts_sh = tf.shape(filts)
-    filts = tf.reshape(filts, filts_sh[0], filts_sh[1], filts_sh[2], final_K**2, input_ch, final_W)
+    filts = tf.reshape(filts, [filts_sh[0], filts_sh[1], filts_sh[2],
+                               final_K**2, input_ch, final_W])
     loss = 0
     # surpress the filter not aligned
     for i in range(input_ch):
@@ -88,9 +89,9 @@ def filts_reg_loss(filts, input_ch, final_K, final_W, use_l1 = False):
                 continue
             else:
                 if use_L1:
-                    loss += tf.sum(tf.abs(filts[..., i, j]))
+                    loss += tf.reduce_sum(tf.abs(filts[..., i, j]))
                 else:
-                    loss += tf.sum(tf.square(filts[...,i,j]))
+                    loss += tf.reduce_sum(tf.square(filts[...,i,j]))
     return loss
 
 
