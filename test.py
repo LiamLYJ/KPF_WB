@@ -17,18 +17,17 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
-    'patch_size', 256, 'The height/width of images in each batch.')
+    'patch_size', 128, 'The height/width of images in each batch.')
 
 flags.DEFINE_string('ckpt_path', './logs_tmp/',
                     'Directory where to write training.')
 flags.DEFINE_string('save_dir', './save_dir', 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', '/home/lyj/Downloads/Sony/preprocessed', '')
+flags.DEFINE_string('dataset_dir', '/home/cpjp/lyj/Downloads/Sony/preprocessed', '')
 flags.DEFINE_string('dataset_file_name', './tmp_test.txt','')
-
-flags.DEFINE_integer('final_K', 1, 'size of filter')
+flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 
-flags.DEFINE_integer('total_test_num', 1000, 'num of test file')
+flags.DEFINE_integer('total_test_num', 50, 'num of test file')
 flags.DEFINE_boolean('write_sum', False, 'if write summay in test mode')
 FLAGS = flags.FLAGS
 
@@ -40,18 +39,14 @@ def test(FLAGS):
     final_K = FLAGS.final_K
     dataset_dir = os.path.join(FLAGS.dataset_dir)
     dataset_file_name = FLAGS.dataset_file_name
-    input_image_big, gt_image_big = data_provider.load_batch(dataset_dir, dataset_file_name,
+    input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
                                                      batch_size, height, width, channel = final_W,
-                                                     shuffle = False, use_ms = True)
+                                                     shuffle = False, use_ms = False)
 
-    input_image = tf.image.resize_images(input_image_big, [64,64])
     with tf.variable_scope('generator'):
-        predict_image_small, filters_small = net.convolve_net(input_image, final_K, final_W, ch0=64, N=2, D=3,
+        filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=3, D=3,
                       scope='get_filted', separable=False, bonus=False)
-    filters = tf.reshape(filters_small, [batch_size, 64,64,-1])
-    filters = tf.image.resize_images(filters, [256,256])
-    filters = tf.reshape(filters,[batch_size, 256,256, final_K**2*3, final_W])
-    predict_image_big = net.convolve(input_image_big, filters, final_K, final_W)
+    predict_image = net.convolve(input_image, filters, final_K, final_W)
 
     # summaies
     # filters_sum = tf.summary.image('filters', filters)
@@ -84,13 +79,11 @@ def test(FLAGS):
         max_steps = FLAGS.total_test_num // batch_size
         for i_step in range(max_steps):
             input_image_, gt_image_, predict_image_, filters_, sum_total_ = \
-                    sess.run([input_image_big, gt_image_big, predict_image_big, filters, sum_total])
-            # input_image_, gt_image_, predict_image_, filters_, sum_total_ = \
-            #         sess.run([input_image, gt_image, predict_image, filters, sum_total])
+                    sess.run([input_image, gt_image, predict_image, filters, sum_total])
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
                 imsave(os.path.join(FLAGS.save_dir, '%03d_%02d.png'%(i_step,batch_i)), concat[batch_i]*255.0 )
-
+                print ('saved once')
             if FLAGS.write_sum and i_step % 20 == 0:
                 writer.add_summary(sum_total_, i)
                 print ('summary saved')
