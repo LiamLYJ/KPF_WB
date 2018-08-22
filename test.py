@@ -39,9 +39,9 @@ def test(FLAGS):
     final_K = FLAGS.final_K
     dataset_dir = os.path.join(FLAGS.dataset_dir)
     dataset_file_name = FLAGS.dataset_file_name
-    input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
+    input_image, gt_image, label = data_provider.load_batch(dataset_dir, dataset_file_name,
                                                      batch_size, height, width, channel = final_W,
-                                                     shuffle = False, use_ms = False)
+                                                     shuffle = False, use_ms = False, with_gain = True)
 
     with tf.variable_scope('generator'):
         filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=3, D=3,
@@ -78,8 +78,8 @@ def test(FLAGS):
 
         max_steps = FLAGS.total_test_num // batch_size
         for i_step in range(max_steps):
-            input_image_, gt_image_, predict_image_, filters_, sum_total_ = \
-                    sess.run([input_image, gt_image, predict_image, filters, sum_total])
+            input_image_, gt_image_, predict_image_, filters_, label_, sum_total_ = \
+                    sess.run([input_image, gt_image, predict_image, filters, label, sum_total])
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
                 imsave(os.path.join(FLAGS.save_dir, '%03d_%02d.png'%(i_step,batch_i)), concat[batch_i]*255.0 )

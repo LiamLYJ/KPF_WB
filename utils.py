@@ -109,6 +109,43 @@ def special_downsampling(img, scale):
             img_down[j,i,:] = value
     return img_down
 
+def summary_angular_errors(errors):
+    errors = sorted(errors)
+
+    def g(f):
+        return np.percentile(errors, f * 100)
+
+    median = g(0.5)
+    mean = np.mean(errors)
+    trimean = 0.25 * (g(0.25) + 2 * g(0.5) + g(0.75))
+    results = {
+        '25': np.mean(errors[:int(0.25 * len(errors))]),
+        '75': np.mean(errors[int(0.75 * len(errors)):]),
+        '95': g(0.95),
+        'tri': trimean,
+        'med': median,
+        'mean': mean
+    }
+    return results
+
+
+def just_print_angular_errors(results):
+    print ("25: %5.3f," % results['25'],)
+    print ("med: %5.3f" % results['med'],)
+    print ("tri: %5.3f" % results['tri'],)
+    print ("avg: %5.3f" % results['mean'],)
+    print ("75: %5.3f" % results['75'],)
+    print ("95: %5.3f" % results['95'])
+
+
+def print_angular_errors(errors):
+    print ("%d images tested. Results:" % len(errors))
+    results = summary_angular_errors(errors)
+    just_print_angular_errors(results)
+    return results
+
+
+
 if __name__ == '__main__':
     # filts = np.random.randn(5,5,3)
     # filts = np.arange(18).reshape(3,3,2)

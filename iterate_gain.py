@@ -6,60 +6,41 @@ import numpy as np
 import cv2
 from skimage.transform import resize
 from utils import *
-# img = cv2.imread('111MSDCF_DSC07998.png')
-# img = cv2.resize(img,(256,256))
-# h,w,c = img.shape
-# input_img = img.copy()
-# ref_img = cv2.resize(input_img, (w//4, h//4))
-# ref_img = np.array([2.5781,1.0,1.7617]) * ref_img[...,::-1]
-# cv2.imwrite('input.png', input_img)
-# cv2.imwrite('ref.png', ref_img)
-# raise
 
-file0 = 'input.png'
-file1 = 'ref.png'
-img0 = io.imread(file0)
-h,w,c = img0.shape
-img1 = cv2.resize(img0, (w //4 , h//4))
-img1 = np.clip(np.array([2.5781,1.0,1.7617]) * img1[...,::-1], 0, 255.0)
-# img0 = cv2.resize(img0, (w //2, h//2))
-img1 = special_downsampling(img1, 2)
-img0 = special_downsampling(img0, 8)
-
-# scale = 4
-# img0 = special_downsampling(img0, scale)
-# img1 = io.imread(file1)
-#
-# h,w,c = img1.shape
-# img0 = cv2.resize(img0, (w,h))
-# # print (img1 / img0)
-# # raise
-#
-# extrem_h = h // 4
-# extrem_w = w // 4
-# img0 = cv2.resize(img0, (extrem_w, extrem_h), interpolation=cv2.INTER_CUBIC)
-# img1 = cv2.resize(img1, (extrem_w, extrem_h), interpolation=cv2.INTER_CUBIC)
-# img_0 = color.rgb2lab(img_0)
-# img_1 = color.rgb2lab(img_1)
-
-#
-# img0 = np.arange(6).reshape(3,2)
-# img1 = img0 * np.array([2,3])
-# print (img0)
-# print (img1)
-
-
-# img1 = np.array([2.578,1.0,1.7617]) * img0
 
 def f(x,img0,img1):
     x = np.reshape(x,-1)
-    img0 = np.clip(x * img0[...,::-1], 0, 255)
+    img0 = np.clip(img0 * x[::-1], 0, 255)
     # img0 = color.rgb2lab(img0)
     # img1 = color.rgb2lab(img1)
     loss = np.sum((img0 - img1)**2) / 2
     return loss
 
-# print (img1/ img0)
-a = optimize.fmin(f,[1.0,1.0,1.0], args=(img0,img1))
+# gain = np.array([2.531,1.0,1.793]) # 000_00.tiff
+gain = np.array([2.848,1.0,1.656]) #000_03.tiff
+# img = cv2.imread('input.png')
+concat = cv2.imread('000_03.tiff').astype(np.float32)
+# concat = cv2.imread('000_00.tiff').astype(np.float32)
+h,w,c = concat.shape
+w_cut = w //3
+img = concat[:,0:w_cut,:]
+
+img_gt_pure = np.clip(img * gain[::-1], 0, 255)
+a = optimize.fmin(f, [1.0, 1.0, 1.0], args= (img, img_gt_pure))
 print (a)
-print (angular_error(np.array(a), np.array([2.578,1.0,1.7617])))
+img_gt = concat[:, w_cut: 2*w_cut, :]
+b = optimize.fmin(f, [1.0, 1.0, 1.0], args = (img, img_gt))
+print (b)
+img_est = concat[:,2*w_cut:3*w_cut,:]
+c = optimize.fmin(f, [1.0, 1.0, 1.0], args = (img, img_est))
+print (c)
+
+print ('angluar of pure gt :', angular_error(np.array(a), gain))
+print ('angluar of gt :', angular_error(np.array(b), gain))
+print ('angluar of est :', angular_error(np.array(c), gain))
+
+est_gain = np.array([ 2.72230778,0.99272707,1.69406263])
+img_a = img_gt_pure
+img_b = np.clip(img * est_gain[::-1], 0, 255)
+cv2.imwrite('a.png', img_a)
+cv2.imwrite('b.png', img_b)
