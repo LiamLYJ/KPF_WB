@@ -34,7 +34,7 @@ def read_label_file(file):
 
 
 def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False,
-                    with_gain = False, with_file_name_gain = False):
+                    with_only_gain = False, with_file_name_gain = False):
     file_names, labels = read_label_file(dataset_file_name)
     file_names = [os.path.join(dataset_dir, fp) for fp in file_names]
 
@@ -50,9 +50,9 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
     image_after = tf.reshape(image_after, [height, width, channel])
 
     if use_ms:
-        file_name_ms, label_ms = tf.train.slice_input_producer([file_names, labels],
+        file_name_ms_tmp, label_ms = tf.train.slice_input_producer([file_names, labels],
                                                      shuffle=True)
-        file_name_ms = tf.read_file(file_name_ms)
+        file_name_ms = tf.read_file(file_name_ms_tmp)
         image_ms = tf.image.decode_png(file_name_ms, channels=channel)
         image_ms =  tf.image.resize_images(image_ms, [height, width])
         image_after_ms = tf.clip_by_value(tf.reshape(image_ms,[-1, channel]) * tf.reshape(label_ms,[-1, channel]), 0, 255)
@@ -86,7 +86,7 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
         image =  tf.reshape(image, [height, width, channel])
         image_after = tf.reshape(image_after, [height, width, channel])
 
-    if with_gain:
+    if with_only_gain:
         # if use gain, it can not be ms
         assert (not use_ms and not with_file_name_gain)
         # label = tf.reshape(label, [-1]) / tf.norm(label)
@@ -96,7 +96,7 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
         return X,Y,gt_gain
 
     elif with_file_name_gain:
-        assert not use_ms
+        assert (not use_ms and not with_only_gain)
         label = tf.reshape(label, [-1])
         # label = tf.reshape(label, [-1]) / tf.norm(label)
         file_name_tmp = tf.reshape(file_name_tmp, [-1])
@@ -112,12 +112,12 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
 
 
 if __name__ == '__main__':
-    dataset_dir = '/home/cpjp/lyj/Downloads/Sony/preprocessed'
+    dataset_dir = './data/sony'
     dataset_file_name = 'tmp_test.txt'
     batch_size = 2
     height = width = 256
     # image, image_after = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, use_ms = True)
-    # image, image_after, gt = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, with_gain = True)
+    # image, image_after, gt = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, with_only_gain = True)
     image, image_after, gt, img_name = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, with_file_name_gain = True)
     save_path = './check_dump'
     if not os.path.exists(save_path):
@@ -131,7 +131,9 @@ if __name__ == '__main__':
             # image_, image_after_ = sess.run([image, image_after])
             image_, image_after_, gt_, img_name_ = sess.run([image, image_after, gt, img_name])
             for j in range(batch_size):
-                imsave(os.path.join(save_path, '%03d_%02d_input.png'%(i,j)), image_[j])
-                imsave(os.path.join(save_path, '%03d_%02d_output.png'%(i,j)), image_after_[j])
+                # imsave(os.path.join(save_path, '%03d_%02d_input.png'%(i,j)), image_[j])
+                current_file_name = img_name_[j][0].decode('utf-8').split('/')[-1]
+                imsave(os.path.join(save_path, current_file_name), image_[j])
+                # imsave(os.path.join(save_path, '%03d_%02d_output.png'%(i,j)), image_after_[j])
         coord.request_stop()
         coord.join(threads)

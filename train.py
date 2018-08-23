@@ -19,8 +19,8 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
-flags.DEFINE_string('dataset_dir', '/home/cpjp/lyj/Downloads/Sony/preprocessed', '')
-flags.DEFINE_string('dataset_file_name', './tmp.txt','')
+flags.DEFINE_string('dataset_dir', './data/sony/', '')
+flags.DEFINE_string('dataset_file_name', './tmp.txt','train_files')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
 flags.DEFINE_integer('max_number_of_steps', 100000000,
@@ -31,11 +31,10 @@ flags.DEFINE_integer('input_ch', 3, 'size of input channel')
 flags.DEFINE_integer('save_iter', 500, 'save iter inter')
 flags.DEFINE_integer('sum_iter', 5, 'sum iter inter')
 flags.DEFINE_float('img_loss_weight', 1.0, 'weight for img_loss')
-flags.DEFINE_float('filts_reg_weight', 1.0, 'weight for filts regularation')
+flags.DEFINE_float('filts_reg_weight', 0.001, 'weight for filts regularation')
+flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
 
 FLAGS = flags.FLAGS
-
-
 
 def train(FLAGS):
     batch_size = FLAGS.batch_size
@@ -45,8 +44,9 @@ def train(FLAGS):
     input_ch = FLAGS.input_ch
     dataset_dir = os.path.join(FLAGS.dataset_dir)
     dataset_file_name = FLAGS.dataset_file_name
-    input_image, gt_image, gt_gain = data_provider.load_batch(dataset_dir, dataset_file_name,
-                                                     batch_size, height, width, channel = input_ch, with_gain = True)
+
+    input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name, batch_size, height, width,
+                                    channel = input_ch, use_ms = FLAGS.use_ms )
 
     with tf.variable_scope('generator'):
         filts = net.convolve_net(input_image, final_K, final_W, ch0=64, N=3, D=3,

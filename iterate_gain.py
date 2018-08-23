@@ -16,11 +16,11 @@ def f(x,img0,img1):
     loss = np.sum((img0 - img1)**2) / 2
     return loss
 
-# gain = np.array([2.531,1.0,1.793]) # 000_00.tiff
-gain = np.array([2.848,1.0,1.656]) #000_03.tiff
+gain = np.array([2.531,1.0,1.793]) # 000_00.tiff
+# gain = np.array([2.848,1.0,1.656]) #000_03.tiff
 # img = cv2.imread('input.png')
-concat = cv2.imread('000_03.tiff').astype(np.float32)
-# concat = cv2.imread('000_00.tiff').astype(np.float32)
+# concat = cv2.imread('000_03.tiff').astype(np.float32)
+concat = cv2.imread('000_00.tiff').astype(np.float32)
 h,w,c = concat.shape
 w_cut = w //3
 img = concat[:,0:w_cut,:]
@@ -39,8 +39,8 @@ print ('angluar of pure gt :', angular_error(np.array(a), gain))
 print ('angluar of gt :', angular_error(np.array(b), gain))
 print ('angluar of est :', angular_error(np.array(c), gain))
 
-est_gain = np.array([ 2.72230778,0.99272707,1.69406263])
-img_a = img_gt_pure
-img_b = np.clip(img * est_gain[::-1], 0, 255)
-cv2.imwrite('a.png', img_a)
-cv2.imwrite('b.png', img_b)
+# est_gain = np.array([ 2.72230778,0.99272707,1.69406263])
+# img_a = img_gt_pure
+# img_b = np.clip(img * est_gain[::-1], 0, 255)
+# cv2.imwrite('a.png', img_a)
+# cv2.imwrite('b.png', img_b)

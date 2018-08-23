@@ -2,6 +2,7 @@ import os
 import numpy as np
 import operator
 import math
+from scipy import optimize
 
 def get_concat(input,gt,est):
     concat = np.concatenate([input, gt, est], axis = 2) / 255.0
@@ -144,6 +145,21 @@ def print_angular_errors(errors):
     just_print_angular_errors(results)
     return results
 
+
+def solve_gain(img, img_ref):
+    def f(x,img0,img1):
+        x = np.reshape(x,-1)
+        img0 = np.clip(img0 * x, 0, 255)
+        # img0 = color.rgb2lab(img0)
+        # img1 = color.rgb2lab(img1)
+        loss = np.sum((img0 - img1)**2) / 2
+        return loss
+    img = np.clip(img, 0 , 255.0)
+    img_ref = np.clip(img_ref, 0 , 255.0)
+    # gain_mean = np.mean(np.mean(img_ref / img, axis = 0), axis= 0)
+    # gain = optimize.fmin(f, gain_mean, args= (img, img_ref))
+    gain = optimize.fmin(f, [1.0,1.0,1.0], args= (img, img_ref))
+    return gain
 
 
 if __name__ == '__main__':
