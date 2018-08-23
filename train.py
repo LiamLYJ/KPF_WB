@@ -10,8 +10,6 @@ import net
 from tf_utils import *
 import data_provider
 
-FLAGS = flags.FLAGS
-
 flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
@@ -20,7 +18,8 @@ flags.DEFINE_integer(
 flags.DEFINE_string('train_log_dir', './logs_tmp/',
                     'Directory where to write training.')
 flags.DEFINE_string('dataset_dir', './data/sony/', '')
-flags.DEFINE_string('dataset_file_name', './tmp.txt','train_files')
+flags.DEFINE_string('dataset_file_name_train', './file_train.txt','train_files')
+flags.DEFINE_string('dataset_file_name_val', './file_val.txt','train_files')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
 flags.DEFINE_integer('max_number_of_steps', 100000000,
@@ -33,6 +32,14 @@ flags.DEFINE_integer('sum_iter', 5, 'sum iter inter')
 flags.DEFINE_float('img_loss_weight', 1.0, 'weight for img_loss')
 flags.DEFINE_float('filts_reg_weight', 0.001, 'weight for filts regularation')
 flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
+flags.DEFINE_boolean('h_flip', True, 'horizontal fip')
+flags.DEFINE_boolean('v_flip', True, 'vertical fip')
+flags.DEFINE_float('rotate', 30.0, 'rotate angle')
+flags.DEFINE_float('crop_prob', 0.5, 'crop_probability')
+flags.DEFINE_float('crop_min_percent', 0.6, 'crop min percent' )
+flags.DEFINE_float('crop_max_percent', 1.0, 'crop max percent' )
+flags.DEFINE_float('mixup', 0.0, 'mix up for data augmentation')
+
 
 FLAGS = flags.FLAGS
 
@@ -43,10 +50,18 @@ def train(FLAGS):
     final_K = FLAGS.final_K
     input_ch = FLAGS.input_ch
     dataset_dir = os.path.join(FLAGS.dataset_dir)
-    dataset_file_name = FLAGS.dataset_file_name
+    dataset_file_name_train = FLAGS.dataset_file_name_train
+    dataset_file_name_val = FLAGS.dataset_file_name_val
 
-    input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name, batch_size, height, width,
+    input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name_train, batch_size, height, width,
                                     channel = input_ch, use_ms = FLAGS.use_ms )
+    input_image_val, gt_image_val = data_provider.load_batch(dataset_dir, dataset_file_name_val, batch_size, height, width,
+                                    channel = input_ch, use_ms = FLAGS.use_ms )
+
+    image_concat = tf.concat([input_image, gt_image], axis = -1)
+    image_concat = data_augment(image_concat, horizontal_flip=FLAGS.h_flip, vertical_flip=FLAGS.v_flip, rotate=FLAGS.rotate,
+                                crop_probability=FLAGS.crop_prob, crop_min_percent=FLAGS.crop_min_percent, crop_max_percent=FLAGS.crop_max_percent, mixup=0)
+    input_image, gt_image = tf.split(image_concat, [3,3], axis = -1)
 
     with tf.variable_scope('generator'):
         filts = net.convolve_net(input_image, final_K, final_W, ch0=64, N=3, D=3,
@@ -73,6 +88,12 @@ def train(FLAGS):
     slim.losses.add_loss(tf.reduce_sum(tf.stack(losses)))
     total_loss = slim.losses.get_total_loss()
 
+    # check val loss
+    predict_image_val = convolve(input_image_val, filts, final_K, final_W)
+    predict_image_val_srgb = sRGBforward(predict_image_val)
+    gt_image_val_srgb = sRGBforward(gt_image_val)
+    val_loss = basic_img_loss(gt_image_val_srgb, predict_image_val_srgb)
+
     # summaies
     filts_sh = tf.shape(filts)
     # filts_for_sum = tf.reshape(filts, [filts_sh[0], filts[1], filts[2], -1, final_W])
@@ -94,6 +115,7 @@ def train(FLAGS):
     filts_loss_sum = tf.summary.scalar('filts_loss', filts_loss)
 
     sum_total = tf.summary.merge_all()
+    sum_val = tf.summary.scalar('val_loss', val_loss)
 
     # optimizer
     g_vars = tf.get_collection(
@@ -108,7 +130,8 @@ def train(FLAGS):
     config = tf.ConfigProto()
     with tf.Session(config=config) as sess:
 
-        writer = tf.summary.FileWriter(FLAGS.train_log_dir, sess.graph)
+        writer_train = tf.summary.FileWriter(os.path.join(FLAGS.train_log_dir,'train'), sess.graph)
+        writer_val = tf.summary.FileWriter(os.path.join(FLAGS.train_log_dir,'val'), sess.graph)
 
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
@@ -133,9 +156,11 @@ def train(FLAGS):
             if i % FLAGS.save_iter == 0:
                 print ('Saving ckpt at step', i)
                 saver.save(sess, FLAGS.train_log_dir + 'model.ckpt', global_step=i)
+                sum_val_ = sess.run(sum_val)
+                writer_val.add_summary(sum_val_, i)
 
             if i % FLAGS.sum_iter == 0:
-                writer.add_summary(sum_total_, i)
+                writer_train.add_summary(sum_total_, i)
                 print ('summary saved')
 
         coord.request_stop()
@@ -145,6 +170,10 @@ def train(FLAGS):
 def main(_):
     if not gfile.Exists(FLAGS.train_log_dir):
         gfile.MakeDirs(FLAGS.train_log_dir)
+    if not gfile.Exists(os.path.join(FLAGS.train_log_dir, 'train')):
+        gfile.MakeDirs(os.path.join(FLAGS.train_log_dir, 'train'))
+    if not gfile.Exists(os.path.join(FLAGS.train_log_dir, 'val')):
+        gfile.MakeDirs(os.path.join(FLAGS.train_log_dir, 'val'))
 
     train(FLAGS)
 

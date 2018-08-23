@@ -54,8 +54,8 @@ def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch):
     dot_ref = dot_results[..., ref_ch]
     dot_sel = np.squeeze(dot_sel)
     dot_ref = np.squeeze(dot_ref)
-    dot_sel_sum = np.sum(dot_sel, axis = -1)
-    dot_ref_sum = np.sum(dot_ref, axis = -1)
+    dot_sel_sum = np.mean(np.abs(dot_sel), axis = -1)
+    dot_ref_sum = np.mean(np.abs(dot_ref), axis = -1) + 0.00001
     batch_confidence = dot_sel_sum / dot_ref_sum # [batch , h, w]
     batch_confidence = np.mean(np.mean(batch_confidence, axis = -1), axis = -1) # [batch,1]
 

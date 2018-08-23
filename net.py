@@ -101,6 +101,7 @@ def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'
                     inputs,
                     [tf.shape(input_stack)[1], tf.shape(input_stack)[2]],
                     method=tf.image.ResizeMethod.BILINEAR)
+            # inputs = tf.nn.relu(inputs)        
         return inputs
 
 def convolve_net_v1(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'):
