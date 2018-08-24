@@ -112,8 +112,8 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
 
 
 if __name__ == '__main__':
-    dataset_dir = './data/sony'
-    dataset_file_name = 'tmp_test.txt'
+    dataset_dir = './data/gehler'
+    dataset_file_name = 'data_txt_file/gehler_train.txt'
     batch_size = 2
     height = width = 256
     # image, image_after = load_batch(dataset_dir, dataset_file_name, batch_size, height, width, use_ms = True)
@@ -134,6 +134,7 @@ if __name__ == '__main__':
                 # imsave(os.path.join(save_path, '%03d_%02d_input.png'%(i,j)), image_[j])
                 current_file_name = img_name_[j][0].decode('utf-8').split('/')[-1]
                 imsave(os.path.join(save_path, current_file_name), image_[j])
+                imsave(os.path.join(save_path, current_file_name), image_after_[j])
                 # imsave(os.path.join(save_path, '%03d_%02d_output.png'%(i,j)), image_after_[j])
         coord.request_stop()
         coord.join(threads)
