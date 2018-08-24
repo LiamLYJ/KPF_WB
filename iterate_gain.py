@@ -8,6 +8,15 @@ from skimage.transform import resize
 from utils import *
 
 
+
+est = np.load('save_dir_new/000_00.npy')
+concat = cv2.imread('save_dir_new/000_00.png')
+h,w,c = concat.shape
+w_cut = w //4
+img0 = concat[:,0:w_cut,:]
+img2 = concat[:,2*w_cut:3*w_cut,:]e
+raise
+
 def f(x,img0,img1):
     x = np.reshape(x,-1)
     img0 = np.clip(img0 * x[::-1], 0, 255)
