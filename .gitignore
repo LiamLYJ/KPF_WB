@@ -26,3 +26,5 @@ logs_tmp
 check_dump/
 tmp*
 log*/
+*.mat
+save_*/

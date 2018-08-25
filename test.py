@@ -17,16 +17,17 @@ flags.DEFINE_integer('batch_size', 20, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('ckpt_path', './logs_ms_aug/',
+flags.DEFINE_string('ckpt_path', './logs_gehler/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', './save_dir_new', 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', './data/sony', '')
-flags.DEFINE_string('dataset_file_name', './tmp_test.txt','')
+flags.DEFINE_string('save_dir', './save_dir_gehler_ms', 'Directoru to save test results')
+flags.DEFINE_string('dataset_dir', './data/gehler', '')
+flags.DEFINE_string('dataset_file_name', './data_txt_file/gehler_val.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 
 flags.DEFINE_integer('total_test_num', 100, 'num of test file')
 flags.DEFINE_boolean('write_sum', False, 'if write summay in test mode')
+flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
 FLAGS = flags.FLAGS
 
 
@@ -37,13 +38,14 @@ def test(FLAGS):
     final_K = FLAGS.final_K
     dataset_dir = os.path.join(FLAGS.dataset_dir)
     dataset_file_name = FLAGS.dataset_file_name
-    input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
+    if FLAGS.use_ms:
+        input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
+                                                         batch_size, height, width, channel = final_W,
+                                                         shuffle = False, use_ms = True,)
+    else:
+        input_image, gt_image, label, file_name = data_provider.load_batch(dataset_dir, dataset_file_name,
                                                      batch_size, height, width, channel = final_W,
-                                                     shuffle = False, use_ms = True,)
-
-    # input_image, gt_image, label, file_name = data_provider.load_batch(dataset_dir, dataset_file_name,
-    #                                                  batch_size, height, width, channel = final_W,
-    #                                                  shuffle = False, use_ms = False, with_file_name_gain = True)
+                                                     shuffle = False, use_ms = False, with_file_name_gain = True)
 
     with tf.variable_scope('generator'):
         filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=3, D=3,
@@ -82,33 +84,40 @@ def test(FLAGS):
 
         max_steps = FLAGS.total_test_num // batch_size
         for i_step in range(max_steps):
-            input_image_, gt_image_, predict_image_, filters_, sum_total_ = \
+            if FLAGS.use_ms:
+                input_image_, gt_image_, predict_image_, filters_, sum_total_ = \
                     sess.run([input_image, gt_image, predict_image, filters, sum_total])
-            # input_image_, gt_image_, predict_image_, filters_, label_, file_name_ , sum_total_ = \
-            #         sess.run([input_image, gt_image, predict_image, filters, label, file_name, sum_total])
+            else:
+                input_image_, gt_image_, predict_image_, filters_, label_, file_name_ , sum_total_ = \
+                    sess.run([input_image, gt_image, predict_image, filters, label, file_name, sum_total])
+
             batch_confidence_r = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 0, ref_ch = 2)
             batch_confidence_b = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 2, ref_ch = 0)
 
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
-                # imsave(os.path.join(FLAGS.save_dir, '%03d_%02d.png'%(i_step,batch_i)), concat[batch_i]*255.0 )
-
                 est = utils.solve_gain(input_image_[batch_i], predict_image_[batch_i])
                 print ('cofindece_r: ', batch_confidence_r[batch_i])
                 print ('cofindece_b: ', batch_confidence_b[batch_i])
-                # current_file_name = file_name_[batch_i][0].decode('utf-8').split('/')[-1]
-                # print (' {} saved once'.format(current_file_name))
-                # gt = label_[batch_i]
-                # error = utils.angular_error(est, gt)
-                # print ('est is ; ', est)
-                # print ('gt is ; ', gt)
-                # print ('error is ; ', error)
-                # # raise
-                # errors.append(error)
+
+                if FLAGS.use_ms:
+                    save_file_name = '%03d_%02d.png'%(i_step,batch_i)
+                else:
+                    current_file_name = file_name_[batch_i][0].decode('utf-8').split('/')[-1]
+                    print (' {} saved once'.format(current_file_name))
+                    gt = label_[batch_i]
+                    error = utils.angular_error(est, gt)
+                    print ('est is ; ', est)
+                    print ('gt is ; ', gt)
+                    print ('error is ; ', error)
+                    if 'IMG' in current_file_name:
+                        errors.append(error)
+                    save_file_name = current_file_name
+
                 est_img_ = np.clip(input_image_[batch_i] * est, 0, 255.0) / 255.0
                 all_concat = np.concatenate([concat[batch_i], est_img_], axis = 1)
-                # imsave(os.path.join(FLAGS.save_dir, current_file_name), all_concat*255.0 )
-                imsave(os.path.join(FLAGS.save_dir, '%03d_%02d.png'%(i_step,batch_i)), all_concat*255.0 )
+                imsave(os.path.join(FLAGS.save_dir, save_file_name), all_concat*255.0 )
+
                 # np.save(os.path.join(FLAGS.save_dir,'%03d_%02d.npy'%(i_step,batch_i)), predict_image_[batch_i])
 
             if FLAGS.write_sum and i_step % 20 == 0:
@@ -117,7 +126,8 @@ def test(FLAGS):
 
         coord.request_stop()
         coord.join(threads)
-    # utils.print_angular_errors(errors)
+    if errors:
+        utils.print_angular_errors(errors)
 
 def main(_):
     if not gfile.Exists(FLAGS.save_dir):

@@ -46,17 +46,22 @@ def check_gehler(img_list, mat):
 
         cv2.waitKey()
 
-def make_txt_file(img_list, mat, save_dir):
+
+# we found two camera cannot be trian together
+# the whole dataset of gehler has 586, 82-camera0 ,remian - camera1
+# so we only use the caerame1 :
+def make_txt_file(img_list, mat, save_dir = None):
     all_num = len(img_list)
-    train_num = int(0.75 * all_num)
-    val_num = all_num - train_num
-    filename_train = 'gehler_train.txt'
-    filename_val = 'gehler_val.txt'
+
+    val_num = 80
+    filename_train = './data_txt_file/gehler_train_only_one.txt'
+    filename_val = './data_txt_file/gehler_val_only_one.txt'
 
     data_dict = {}
     for index, item_name in enumerate(img_list):
         data_dict[item_name] = index
 
+    count = 0
     with open(filename_val, 'w') as val_file:
         with open(filename_train, 'w') as train_file:
             for item_name in data_dict:
@@ -66,19 +71,22 @@ def make_txt_file(img_list, mat, save_dir):
                     raw = np.maximum(img_cv2 - 129, [0,0,0])
                     img12 = ((img_cv2 - 129) / (2**12 -1)) * 100.0
                 else:
-                    img12 = ((img_cv2 - 1) / (2**12 -1)) * 100.0
+                    # img12 = ((img_cv2 - 1) / (2**12 -1)) * 100.0
+                    continue
 
-                image = convert_to_8bit(img12, 2.5)
+                if save_dir is not None:
+                    image = convert_to_8bit(img12, 2.5)
 
-                image = cv2.resize(image, (512,512))
-                save_name = os.path.join(save_dir,item_name.split('/')[-1])
-                cv2.imwrite(save_name, image)
+                    image = cv2.resize(image, (512,512))
+                    save_name = os.path.join(save_dir,item_name.split('/')[-1])
+                    cv2.imwrite(save_name, image)
 
                 index = data_dict[item_name]
                 Gain_R = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][0])
                 Gain_G = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][1])
                 Gain_B = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][2])
-                if index < val_num:
+                if count < val_num:
+                    count += 1
                     write_file = val_file
                 else:
                     write_file = train_file
@@ -92,9 +100,9 @@ def make_txt_file(img_list, mat, save_dir):
 
 
 if __name__ == '__main__':
-    data_path = 'png'
+    data_path = './data/gehler'
     img_list = glob(os.path.join(data_path, '*.png'))
     img_list = sorted(img_list)
-    mat = (scipy.io.loadmat('real_illum_568.mat', squeeze_me = True, struct_as_record = False))
-    make_txt_file(img_list, mat, 'wheretosave')
+    mat = (scipy.io.loadmat('./data/gehler/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
+    make_txt_file(img_list, mat)
     # check_gehler(img_list, mat)

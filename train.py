@@ -15,11 +15,11 @@ flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('train_log_dir', './logs_gehler/',
+flags.DEFINE_string('train_log_dir', './logs_gehler_only_one/',
                     'Directory where to write training.')
 flags.DEFINE_string('dataset_dir', './data/gehler/', '')
-flags.DEFINE_string('dataset_file_name_train', './data_txt_file/gehler_train.txt','train_files')
-flags.DEFINE_string('dataset_file_name_val', './data_txt_file/gehler_val.txt','val_files')
+flags.DEFINE_string('dataset_file_name_train', './data_txt_file/gehler_train_only_one.txt','train_files')
+flags.DEFINE_string('dataset_file_name_val', './data_txt_file/gehler_val_only_one.txt','val_files')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
 flags.DEFINE_integer('max_number_of_steps', 100000000,
