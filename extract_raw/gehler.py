@@ -11,27 +11,37 @@ def convert_to_8bit(arr, clip_percentile):
 def check_gehler(img_list, mat):
     for index, img_name in enumerate(img_list):
         #a, r, g, b,
-        img_cv2 = cv2.imread(os.path.join(data_path, img_name), cv2.IMREAD_UNCHANGED).astype(np.float32)
-        Gain_R = float(np.max(mat['real+rgb'][index])) / float(mat['real_rgb'][index][0])
-        Gain_G = float(np.max(mat['real+rgb'][index])) / float(mat['real_rgb'][index][1])
-        Gain_B = float(np.max(mat['real+rgb'][index])) / float(mat['real_rgb'][index][2])
+        img_cv2 = cv2.imread(img_name, cv2.IMREAD_UNCHANGED).astype(np.float32)
 
+        Gain_R = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][0])
+        Gain_G = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][1])
+        Gain_B = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][2])
 
-        img16 = (img_cv2 / (2**16 -1)) * 100.0
-        image = convert_to_8bit(img16, 2.5)
+        if 'IMG' in img_name:
+            raw = np.maximum(img_cv2 - 129, [0,0,0])
+            img12 = ((img_cv2 - 129) / (2**12 -1)) * 100.0
+        else:
+            img12 = ((img_cv2 - 1) / (2**12 -1)) * 100.0
+
+        image = convert_to_8bit(img12, 2.5)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         image[:,:,0] = np.minimum(image[:,:,0] * Gain_R, 255)
-        image[:,:,1] = np.minimum(image[:,:,1] * Gain_R, 255)
-        image[:,:,2] = np.minimum(image[:,:,2] * Gain_R, 255)
+        image[:,:,1] = np.minimum(image[:,:,1] * Gain_G, 255)
+        image[:,:,2] = np.minimum(image[:,:,2] * Gain_B, 255)
 
         gamma = 1 / 2.2
         image = (image / 255.0) ** gamma * 255.0
         image = np.array(image, dtype = np.uint8)
         img8 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-
-        cv2.imshow('16bit', img16)
+        # print ('index: ', index + 1)
+        # print ('img_name : ', img_name)
+        # print ('Gain_R:', Gain_R)
+        # print ('Gain_G:', Gain_G)
+        # print ('Gain_B:', Gain_B)
+        #
+        # cv2.imshow('12bit', img12)
         cv2.imshow('8bit', img8)
 
         cv2.waitKey()
@@ -51,8 +61,16 @@ def make_txt_file(img_list, mat, save_dir):
         with open(filename_train, 'w') as train_file:
             for item_name in data_dict:
                 img_cv2 = cv2.imread(item_name, cv2.IMREAD_UNCHANGED).astype(np.float32)
-                img16 = (img_cv2 / (2**16 -1)) * 100.0
-                image = convert_to_8bit(img16, 2.5)
+
+                if 'IMG' in item_name:
+                    raw = np.maximum(img_cv2 - 129, [0,0,0])
+                    img12 = ((img_cv2 - 129) / (2**12 -1)) * 100.0
+                else:
+                    img12 = ((img_cv2 - 1) / (2**12 -1)) * 100.0
+
+                image = convert_to_8bit(img12, 2.5)
+
+                image = cv2.resize(image, (512,512))
                 save_name = os.path.join(save_dir,item_name.split('/')[-1])
                 cv2.imwrite(save_name, image)
 
@@ -66,6 +84,11 @@ def make_txt_file(img_list, mat, save_dir):
                     write_file = train_file
                 write_file.write(item_name.split('/')[-1] + '\n')
                 write_file.write(str(Gain_R) + ',' + str(Gain_G) + ',' + str(Gain_B) + '\n')
+                # print ('item_name:', item_name)
+                # print ('index: ', index)
+                # print ('Gain_R:', Gain_R)
+                # print ('Gain_G:', Gain_G)
+                # print ('Gain_B:', Gain_B)
 
 
 if __name__ == '__main__':
@@ -74,3 +97,4 @@ if __name__ == '__main__':
     img_list = sorted(img_list)
     mat = (scipy.io.loadmat('real_illum_568.mat', squeeze_me = True, struct_as_record = False))
     make_txt_file(img_list, mat, 'wheretosave')
+    # check_gehler(img_list, mat)
