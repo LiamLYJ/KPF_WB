@@ -19,9 +19,10 @@ def check_gehler(img_list, mat):
 
         if 'IMG' in img_name:
             raw = np.maximum(img_cv2 - 129, [0,0,0])
-            img12 = ((img_cv2 - 129) / (2**12 -1)) * 100.0
+            img12 = ( raw / (2**12 -1)) * 100.0
         else:
-            img12 = ((img_cv2 - 1) / (2**12 -1)) * 100.0
+            raw = np.maximum(img_cv2 - 1, [0,0,0])
+            img12 = ( raw / (2**12 -1)) * 100.0
 
         image = convert_to_8bit(img12, 2.5)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -69,10 +70,10 @@ def make_txt_file(img_list, mat, save_dir = None):
 
                 if 'IMG' in item_name:
                     raw = np.maximum(img_cv2 - 129, [0,0,0])
-                    img12 = ((img_cv2 - 129) / (2**12 -1)) * 100.0
+                    img12 = ( raw / (2**12 -1)) * 100.0
                 else:
-                    # img12 = ((img_cv2 - 1) / (2**12 -1)) * 100.0
-                    continue
+                    raw = np.maximum(img_cv2 - 1, [0,0,0])
+                    img12 = ( raw / (2**12 -1)) * 100.0
 
                 if save_dir is not None:
                     image = convert_to_8bit(img12, 2.5)
@@ -100,9 +101,10 @@ def make_txt_file(img_list, mat, save_dir = None):
 
 
 if __name__ == '__main__':
-    data_path = './data/gehler'
+    data_path = '/Users/lyj/Desktop/gehler_original'
     img_list = glob(os.path.join(data_path, '*.png'))
     img_list = sorted(img_list)
-    mat = (scipy.io.loadmat('./data/gehler/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
-    make_txt_file(img_list, mat)
+
+    mat = (scipy.io.loadmat('/Users/lyj/Desktop/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
+    make_txt_file(img_list, mat, '/Users/lyj/Desktop/gehler')
     # check_gehler(img_list, mat)
