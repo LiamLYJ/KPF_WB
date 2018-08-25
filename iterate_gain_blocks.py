@@ -32,7 +32,7 @@ def f(x,img_src,img_target):
     return loss
 
 a = optimize.fmin(f, [1.0, 1.0, 1.0], args= (img0, img2))
-print(a)
+print("global gain: ", a)
 a = np.reshape(a,-1)
 img_result=np.clip(img0 * a[::-1], 0, 255)
 cv2.imwrite(data_root+img_id+'_global.png', img_result)
@@ -41,15 +41,25 @@ cv2.imwrite(data_root+img_id+'_global.png', img_result)
 # Clustering for blocks WB
 ##################################
 from sklearn.cluster import DBSCAN
-self_eps = 1e-5
+self_eps = 1e-2
 
 gain_map = (img2+self_eps) / (img0+self_eps)
 width = gain_map.shape[0]
 height = gain_map.shape[1]
 
 gain_map.resize((width*height, gain_map.shape[2]))
+print("gain map min: ", np.amin(gain_map), " max: ", np.amax(gain_map))
 
-db = DBSCAN(eps=0.5, min_samples=10).fit(gain_map)
+gain_map[gain_map>4] = 0 # 4 is decided by statistics of gain_map
+
+# hist_test = gain_map[:,2]
+# print(sum(hist_test>5))
+
+# plt.hist(hist_test, bins=5, range=(np.amin(gain_map), 5))
+# plt.title("R")
+# plt.show()
+
+db = DBSCAN(eps=0.1, min_samples=10).fit(gain_map)
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
 core_samples_mask[db.core_sample_indices_] = True
 labels = db.labels_
