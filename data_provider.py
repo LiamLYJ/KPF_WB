@@ -34,7 +34,7 @@ def read_label_file(file):
 
 
 def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False,
-                    with_only_gain = False, with_file_name_gain = False, aug_color =0.0, aug_color_offdiag = 0.0):
+                    with_only_gain = False, with_file_name_gain = False, aug_color =0.0, aug_color_offdiag = 0.0, is_16bit = False):
     file_names, labels = read_label_file(dataset_file_name)
     file_names = [os.path.join(dataset_dir, fp) for fp in file_names]
 
@@ -44,7 +44,11 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
     file_name_tmp, label = tf.train.slice_input_producer([file_names, labels],
                                                  shuffle=shuffle)
     file_name = tf.read_file(file_name_tmp)
-    image = tf.image.decode_png(file_name, channels=channel)
+    if is_16bit:
+        image = tf.image.decode_png(file_name, dtype = tf.uint16, channels=channel)
+        image = image / 65535.0 * 255.0
+    else:
+        image = tf.image.decode_png(file_name, channels=channel)
 
     image, label = color_augment(image, label, aug_color, aug_color_offdiag)
     image =  tf.image.resize_images(image, [height, width])
@@ -56,7 +60,11 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
         file_name_ms_tmp, label_ms = tf.train.slice_input_producer([file_names, labels],
                                                      shuffle=True)
         file_name_ms = tf.read_file(file_name_ms_tmp)
-        image_ms = tf.image.decode_png(file_name_ms, channels=channel)
+        if is_16bit:
+            image_ms = tf.image.decode_png(file_name_ms, dtype = tf.uint16, channels=channel)
+            image = image / 65535.0 * 255.0
+        else:
+            image_ms = tf.image.decode_png(file_name_ms, channels=channel)
 
         image_ms, label_ms = color_augment(image_ms, label_ms, aug_color, aug_color_offdiag)
         image_ms =  tf.image.resize_images(image_ms, [height, width])

@@ -95,13 +95,11 @@ def make_txt_file(data_path, gt_file, save_dir = None):
                 item_name = os.path.join(data_path, '%d.png'%(item[0]))
                 img_cv2 = cv2.imread(item_name, cv2.IMREAD_UNCHANGED).astype(np.float32)
 
-                processed_raw = np.maximum(img_cv2 -2048, [0,0,0])
-                img12 = (processed_raw / (2**16 -1)) * 100.0
+                raw = np.maximum(img_cv2 -2048, [0,0,0])
 
                 if save_dir is not None:
-                    image = convert_to_8bit(img12, 2.5)
-
-                    image = cv2.resize(image, (512,512))
+                    img8 = (np.clip(raw / raw.max(), 0, 1) * 255.0).astype(np.uint8)
+                    image = cv2.resize(img8, (512,512))
                     save_name = os.path.join(save_dir,'%d.png'%(item[0]))
                     cv2.imwrite(save_name, image)
 
@@ -128,10 +126,23 @@ def make_txt_file(data_path, gt_file, save_dir = None):
 
                 # raise
 
+def make_img(img_list, save_dir):
+    all_num = len(img_list)
+    for item_name in img_list:
+        img_cv2 = cv2.imread(item_name, cv2.IMREAD_UNCHANGED).astype(np.float32)
+
+        raw = np.maximum(img_cv2 - 2048, [0,0,0])
+        img8 = (np.clip(raw / raw.max(), 0, 1) * 255.0).astype(np.uint8)
+
+        image = cv2.resize(img8, (512,512))
+        save_name = os.path.join(save_dir,item_name.split('/')[-1])
+        cv2.imwrite(save_name, image)
+
 if __name__ == '__main__':
-    data_path = '/Users/lyj/Desktop/cube/PNG/'
-    file_gt = '/Users/lyj/Desktop/cube/cube_gt.txt'
+    data_path = '/Users/lyj/Documents/AWB_data/cube/cube_original'
+    file_gt = '/Users/lyj/cube/cube_gt.txt'
     img_list = glob(os.path.join(data_path, '*.png'))
     img_list = sort_nicely(img_list)
     # check_cube(data_path, file_gt)
-    make_txt_file(data_path, file_gt, save_dir = '/Users/lyj/Desktop/cube_')
+    # make_txt_file(data_path, file_gt, save_dir = '/Users/lyj/Desktop/cube_')
+    make_img(img_list,'/Users/lyj/Desktop/cube')
