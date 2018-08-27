@@ -19,7 +19,8 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string('ckpt_path', './logs_gehler/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', './save_dir_gehler_ms', 'Directoru to save test results')
+# flags.DEFINE_string('save_dir', './save_dir_cube', 'Directoru to save test results')
+flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
 flags.DEFINE_string('dataset_dir', './data/gehler', '')
 flags.DEFINE_string('dataset_file_name', './data_txt_file/gehler_val.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
@@ -27,7 +28,7 @@ flags.DEFINE_integer('final_W', 3, 'size of output channel')
 
 flags.DEFINE_integer('total_test_num', 100, 'num of test file')
 flags.DEFINE_boolean('write_sum', False, 'if write summay in test mode')
-flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
+flags.DEFINE_boolean('use_ms', False, 'if use multi_source trianing')
 FLAGS = flags.FLAGS
 
 
@@ -63,6 +64,10 @@ def test(FLAGS):
     config = tf.ConfigProto()
     with tf.Session(config=config) as sess:
 
+        print ('Initializers variables')
+        sess.run(tf.global_variables_initializer())
+        sess.run(tf.local_variables_initializer())
+
         if FLAGS.write_sum:
             writer = tf.summary.FileWriter(FLAGS.save_dir, sess.graph)
 
@@ -70,10 +75,6 @@ def test(FLAGS):
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
         restorer = tf.train.Saver(max_to_keep=None)
-
-        print ('Initializers variables')
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
 
         ckpt_path = tf.train.latest_checkpoint(FLAGS.ckpt_path)
         if ckpt_path is not None:
@@ -91,8 +92,8 @@ def test(FLAGS):
                 input_image_, gt_image_, predict_image_, filters_, label_, file_name_ , sum_total_ = \
                     sess.run([input_image, gt_image, predict_image, filters, label, file_name, sum_total])
 
-            batch_confidence_r = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 0, ref_ch = 2)
-            batch_confidence_b = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 2, ref_ch = 0)
+            batch_confidence_r = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 0, ref_ch = [2])
+            batch_confidence_b = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 2, ref_ch = [0])
 
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
@@ -116,7 +117,8 @@ def test(FLAGS):
 
                 est_img_ = np.clip(input_image_[batch_i] * est, 0, 255.0) / 255.0
                 all_concat = np.concatenate([concat[batch_i], est_img_], axis = 1)
-                imsave(os.path.join(FLAGS.save_dir, save_file_name), all_concat*255.0 )
+                if FLAGS.save_dir is not None:
+                    imsave(os.path.join(FLAGS.save_dir, save_file_name), all_concat*255.0 )
 
                 # np.save(os.path.join(FLAGS.save_dir,'%03d_%02d.npy'%(i_step,batch_i)), predict_image_[batch_i])
 
@@ -130,8 +132,9 @@ def test(FLAGS):
         utils.print_angular_errors(errors)
 
 def main(_):
-    if not gfile.Exists(FLAGS.save_dir):
-        gfile.MakeDirs(FLAGS.save_dir)
+    if FLAGS.save_dir is not None:
+        if not gfile.Exists(FLAGS.save_dir):
+            gfile.MakeDirs(FLAGS.save_dir)
 
     test(FLAGS)
 

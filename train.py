@@ -15,11 +15,11 @@ flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('train_log_dir', './logs_gehler_only_one/',
+flags.DEFINE_string('train_log_dir', './logs_cube/',
                     'Directory where to write training.')
-flags.DEFINE_string('dataset_dir', './data/gehler/', '')
-flags.DEFINE_string('dataset_file_name_train', './data_txt_file/gehler_train_only_one.txt','train_files')
-flags.DEFINE_string('dataset_file_name_val', './data_txt_file/gehler_val_only_one.txt','val_files')
+flags.DEFINE_string('dataset_dir', './data/cube/', '')
+flags.DEFINE_string('dataset_file_name_train', './data_txt_file/cube_train.txt','train_files')
+flags.DEFINE_string('dataset_file_name_val', './data_txt_file/cube_val.txt','val_files')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
 flags.DEFINE_integer('max_number_of_steps', 100000000,
@@ -38,6 +38,8 @@ flags.DEFINE_float('rotate', 30.0, 'rotate angle')
 flags.DEFINE_float('crop_prob', 0.5, 'crop_probability')
 flags.DEFINE_float('crop_min_percent', 0.6, 'crop min percent' )
 flags.DEFINE_float('crop_max_percent', 1.0, 'crop max percent' )
+flags.DEFINE_float('aug_color', 0.1, 'color aug' )
+flags.DEFINE_float('aug_color_offdiag', 0.0, 'aug color offdiag' )
 flags.DEFINE_float('mixup', 0.0, 'mix up for data augmentation')
 
 
@@ -54,7 +56,8 @@ def train(FLAGS):
     dataset_file_name_val = FLAGS.dataset_file_name_val
 
     input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name_train, batch_size, height, width,
-                                    channel = input_ch, use_ms = FLAGS.use_ms )
+                                    channel = input_ch, use_ms = FLAGS.use_ms,
+                                    aug_color = FLAGS.aug_color, aug_color_offdiag = FLAGS.aug_color_offdiag )
     input_image_val, gt_image_val = data_provider.load_batch(dataset_dir, dataset_file_name_val, batch_size, height, width,
                                     channel = input_ch, use_ms = FLAGS.use_ms )
 
@@ -130,6 +133,10 @@ def train(FLAGS):
     config = tf.ConfigProto()
     with tf.Session(config=config) as sess:
 
+        print ('Initializers variables')
+        sess.run(tf.global_variables_initializer())
+        sess.run(tf.local_variables_initializer())
+
         writer_train = tf.summary.FileWriter(os.path.join(FLAGS.train_log_dir,'train'), sess.graph)
         writer_val = tf.summary.FileWriter(os.path.join(FLAGS.train_log_dir,'val'), sess.graph)
 
@@ -137,10 +144,6 @@ def train(FLAGS):
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
         saver = tf.train.Saver(max_to_keep=None)
-
-        print ('Initializers variables')
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
 
         ckpt_path = tf.train.latest_checkpoint(FLAGS.train_log_dir)
         if ckpt_path is not None:

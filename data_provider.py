@@ -34,7 +34,7 @@ def read_label_file(file):
 
 
 def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False,
-                    with_only_gain = False, with_file_name_gain = False):
+                    with_only_gain = False, with_file_name_gain = False, aug_color =0.0, aug_color_offdiag = 0.0):
     file_names, labels = read_label_file(dataset_file_name)
     file_names = [os.path.join(dataset_dir, fp) for fp in file_names]
 
@@ -45,7 +45,10 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
                                                  shuffle=shuffle)
     file_name = tf.read_file(file_name_tmp)
     image = tf.image.decode_png(file_name, channels=channel)
+
+    image, label = color_augment(image, label, aug_color, aug_color_offdiag)
     image =  tf.image.resize_images(image, [height, width])
+
     image_after = tf.clip_by_value(tf.reshape(image,[-1, channel]) * tf.reshape(label,[-1, channel]), 0, 255)
     image_after = tf.reshape(image_after, [height, width, channel])
 
@@ -54,6 +57,8 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
                                                      shuffle=True)
         file_name_ms = tf.read_file(file_name_ms_tmp)
         image_ms = tf.image.decode_png(file_name_ms, channels=channel)
+
+        image_ms, label_ms = color_augment(image_ms, label_ms, aug_color, aug_color_offdiag)
         image_ms =  tf.image.resize_images(image_ms, [height, width])
         image_after_ms = tf.clip_by_value(tf.reshape(image_ms,[-1, channel]) * tf.reshape(label_ms,[-1, channel]), 0, 255)
         image_after_ms = tf.reshape(image_after_ms, [height, width, channel])

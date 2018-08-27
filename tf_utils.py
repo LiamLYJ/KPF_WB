@@ -177,6 +177,29 @@ def data_augment(input, random_crop=False, random_flip=False, random_rotate = Fa
 
     return input
 
+def color_augment(image, illum, aug_color, aug_color_offdiag):
+    # image [h,w,3], illum [3,]
+    image = tf.cast(image, tf.float32)
+    image_sh = tf.shape(image)
+    h,w = image_sh[0], image_sh[1]
+
+    color_aug_matrix = []
+    for i in range(3):
+        for j in range(3):
+            if i == j:
+                value = 1 + tf.random_uniform([]) * aug_color - 0.5 * aug_color
+            else:
+                value = tf.random_uniform([]) * aug_color_offdiag - 0.5 * aug_color_offdiag
+            color_aug_matrix.append(value)
+    color_aug_matrix = tf.concat([color_aug_matrix], axis = 0)
+    color_aug_matrix = tf.reshape(color_aug_matrix, [3,3])
+
+    illum = tf.matmul(tf.reshape(illum, [-1,3]), color_aug_matrix)
+    image_tmp = tf.reshape(image, [-1,3])
+    image = tf.reshape(tf.matmul(image_tmp, color_aug_matrix), [h , w, 3])
+    image = tf.cast(image, tf.uint8)
+    illum = tf.reshape(illum, [3,])
+    return image, illum
 
 def data_augment(images,
             horizontal_flip=False,
