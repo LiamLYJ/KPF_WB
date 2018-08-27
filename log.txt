@@ -1,0 +1,1034 @@
+Pre-Layer with 64 channels at N=3
+Pre-Layer with 64 channels at N=3
+Pre-Layer with 64 channels at N=3
+Downsample
+Pre-Layer with 128 channels at N=2
+Pre-Layer with 128 channels at N=2
+Pre-Layer with 128 channels at N=2
+Downsample
+Pre-Layer with 256 channels at N=1
+Pre-Layer with 256 channels at N=1
+Pre-Layer with 256 channels at N=1
+Recursing to ch=512 and N=0
+Downsample
+Pre-Layer with 512 channels at N=0
+Pre-Layer with 512 channels at N=0
+Pre-Layer with 512 channels at N=0
+Upsample and Skip
+Post-Layer with 256 channels at N=1
+Post-Layer with 256 channels at N=1
+Post-Layer with 256 channels at N=1
+Upsample and Skip
+Post-Layer with 225 channels at N=3
+Post-Layer with 225 channels at N=3
+Final-Layer with 225 channels at N=3
+Upsample
+Initializers variables
+Restoring from ./logs_tmp/model.ckpt-41000
+ 118MSDCF_DSC01650.png saved once
+Optimization terminated successfully.
+         Current function value: 224126.493572
+         Iterations: 90
+         Function evaluations: 163
+est is ;  [ 2.58116285  1.00378314  1.79749723]
+gt is ;  [ 2.53125     1.          1.79296875]
+cofindece_r:  236.26
+cofindece_b:  513.382
+error is ;  0.46806642768690737
+ 120MSDCF_DSC01973.png saved once
+Optimization terminated successfully.
+         Current function value: 99614.859274
+         Iterations: 76
+         Function evaluations: 143
+est is ;  [ 2.61817742  1.0035322   1.77555308]
+gt is ;  [ 2.60546875  1.          1.7421875 ]
+cofindece_r:  342.248
+cofindece_b:  277.506
+error is ;  0.3689508878560202
+ 116MSDCF_DSC00067.png saved once
+Optimization terminated successfully.
+         Current function value: 184681.218182
+         Iterations: 89
+         Function evaluations: 161
+est is ;  [ 1.73628554  1.00550484  2.89248141]
+gt is ;  [ 1.6796875  1.         3.109375 ]
+cofindece_r:  541.443
+cofindece_b:  186.66
+error is ;  2.6186174840337157
+ 121MSDCF_DSC02696.png saved once
+Optimization terminated successfully.
+         Current function value: 209759.519276
+         Iterations: 84
+         Function evaluations: 157
+est is ;  [ 2.62436443  1.00240777  1.7797976 ]
+gt is ;  [ 2.55859375  1.          1.77734375]
+cofindece_r:  249.875
+cofindece_b:  275.674
+error is ;  0.6617091939545557
+ 115MSDCF_DSC09968.png saved once
+Optimization terminated successfully.
+         Current function value: 139003.514627
+         Iterations: 84
+         Function evaluations: 154
+est is ;  [ 2.8309936   1.00272705  1.68386599]
+gt is ;  [ 2.84765625  1.          1.65625   ]
+cofindece_r:  131.768
+cofindece_b:  846.74
+error is ;  0.5387487264550019
+ 120MSDCF_DSC02369.png saved once
+Optimization terminated successfully.
+         Current function value: 200008.699989
+         Iterations: 82
+         Function evaluations: 147
+est is ;  [ 2.53268162  1.00238157  1.83341479]
+gt is ;  [ 2.43359375  1.          1.875     ]
+cofindece_r:  437.559
+cofindece_b:  323.281
+error is ;  1.6490254387219392
+ 114MSDCF_DSC01111.png saved once
+Optimization terminated successfully.
+         Current function value: 28579.590446
+         Iterations: 92
+         Function evaluations: 164
+est is ;  [ 2.81342443  1.00299266  1.68024956]
+gt is ;  [ 2.75390625  1.          1.65625   ]
+cofindece_r:  435.755
+cofindece_b:  551.241
+error is ;  0.3157004209663938
+ 118MSDCF_DSC01661.png saved once
+Optimization terminated successfully.
+         Current function value: 64610.027708
+         Iterations: 91
+         Function evaluations: 167
+est is ;  [ 2.56870241  1.00345363  1.80564273]
+gt is ;  [ 2.5234375  1.         1.8046875]
+cofindece_r:  332.576
+cofindece_b:  632.095
+error is ;  0.4665129779344582
+ 119MSDCF_DSC01523.png saved once
+Optimization terminated successfully.
+         Current function value: 251978.377799
+         Iterations: 80
+         Function evaluations: 148
+est is ;  [ 2.57953517  1.00239775  1.76015432]
+gt is ;  [ 2.53515625  1.          1.79296875]
+cofindece_r:  181.418
+cofindece_b:  329.245
+error is ;  0.9171498059775726
+ 121MSDCF_DSC02661.png saved once
+Optimization terminated successfully.
+         Current function value: 119283.318975
+         Iterations: 97
+         Function evaluations: 175
+est is ;  [ 2.67343359  1.003344    1.73166863]
+gt is ;  [ 2.6796875  1.         1.6875   ]
+cofindece_r:  271.14
+cofindece_b:  371.571
+error is ;  0.69954016075582
+ 121MSDCF_DSC02724.png saved once
+Optimization terminated successfully.
+         Current function value: 648048.236574
+         Iterations: 82
+         Function evaluations: 149
+est is ;  [ 2.58121075  1.00294276  1.81690027]
+gt is ;  [ 2.48828125  1.          1.8828125 ]
+cofindece_r:  389.463
+cofindece_b:  258.457
+error is ;  1.8843650324037629
+ 116MSDCF_DSC00089.png saved once
+Optimization terminated successfully.
+         Current function value: 98714.044960
+         Iterations: 98
+         Function evaluations: 182
+est is ;  [ 1.74226187  1.00430676  2.94736769]
+gt is ;  [ 1.65625  1.       3.15625]
+cofindece_r:  687.526
+cofindece_b:  146.776
+error is ;  2.8684498521522768
+ 121MSDCF_DSC02553.png saved once
+Optimization terminated successfully.
+         Current function value: 20034.452048
+         Iterations: 96
+         Function evaluations: 174
+est is ;  [ 2.63768296  1.00368949  1.75092513]
+gt is ;  [ 2.62109375  1.          1.73046875]
+cofindece_r:  339.311
+cofindece_b:  294.358
+error is ;  0.15442452144111835
+ 114MSDCF_DSC00563.png saved once
+Optimization terminated successfully.
+         Current function value: 91206.803135
+         Iterations: 103
+         Function evaluations: 184
+est is ;  [ 2.40531022  1.00329623  2.48995992]
+gt is ;  [ 2.3515625  1.         2.4921875]
+cofindece_r:  368.239
+cofindece_b:  324.515
+error is ;  0.6545296910972855
+ 119MSDCF_DSC01424.png saved once
+Optimization terminated successfully.
+         Current function value: 549055.629593
+         Iterations: 89
+         Function evaluations: 165
+est is ;  [ 2.51594179  1.00227761  1.81900057]
+gt is ;  [ 2.45703125  1.          1.94140625]
+cofindece_r:  280.007
+cofindece_b:  204.001
+error is ;  2.3371475265046886
+ 114MSDCF_DSC01057.png saved once
+Optimization terminated successfully.
+         Current function value: 96262.324940
+         Iterations: 96
+         Function evaluations: 172
+est is ;  [ 2.79136913  1.00347372  1.7019447 ]
+gt is ;  [ 2.81640625  1.          1.6796875 ]
+cofindece_r:  270.528
+cofindece_b:  1051.78
+error is ;  0.5451776822250838
+ 120MSDCF_DSC02213.png saved once
+Optimization terminated successfully.
+         Current function value: 115308.022967
+         Iterations: 85
+         Function evaluations: 155
+est is ;  [ 2.51245229  1.00423315  1.90790501]
+gt is ;  [ 2.40234375  1.          1.90625   ]
+cofindece_r:  444.758
+cofindece_b:  325.761
+error is ;  1.2285747399399776
+ 120MSDCF_DSC02266.png saved once
+Optimization terminated successfully.
+         Current function value: 49161.992969
+         Iterations: 99
+         Function evaluations: 175
+est is ;  [ 2.66129291  1.00287208  1.73135472]
+gt is ;  [ 2.60546875  1.          1.7421875 ]
+cofindece_r:  323.388
+cofindece_b:  301.022
+error is ;  0.7080948845829794
+ 120MSDCF_DSC02371.png saved once
+Optimization terminated successfully.
+         Current function value: 78143.675342
+         Iterations: 87
+         Function evaluations: 155
+est is ;  [ 2.52983423  1.00322615  1.83805645]
+gt is ;  [ 2.45703125  1.          1.8515625 ]
+cofindece_r:  436.166
+cofindece_b:  287.086
+error is ;  0.9768445316400245
+ 122MSDCF_DSC02933.png saved once
+Optimization terminated successfully.
+         Current function value: 58267.917161
+         Iterations: 99
+         Function evaluations: 177
+est is ;  [ 2.66438131  1.00313355  1.73269611]
+gt is ;  [ 2.67578125  1.          1.69140625]
+cofindece_r:  339.396
+cofindece_b:  599.104
+error is ;  0.7047416134435126
+ 121MSDCF_DSC02637.png saved once
+Optimization terminated successfully.
+         Current function value: 105441.269931
+         Iterations: 100
+         Function evaluations: 182
+est is ;  [ 2.73446169  1.00263057  1.74102179]
+gt is ;  [ 2.6953125   1.          1.66796875]
+cofindece_r:  261.686
+cofindece_b:  370.74
+error is ;  0.7715308241187557
+ 120MSDCF_DSC02046.png saved once
+Optimization terminated successfully.
+         Current function value: 36327.451423
+         Iterations: 88
+         Function evaluations: 161
+est is ;  [ 2.62330015  1.00280429  1.75519727]
+gt is ;  [ 2.58984375  1.          1.75390625]
+cofindece_r:  433.749
+cofindece_b:  389.304
+error is ;  0.3231772584239663
+ 121MSDCF_DSC02534.png saved once
+Optimization terminated successfully.
+         Current function value: 229593.117917
+         Iterations: 83
+         Function evaluations: 154
+est is ;  [ 2.59158956  1.00222849  1.78423244]
+gt is ;  [ 2.59765625  1.          1.74609375]
+cofindece_r:  357.318
+cofindece_b:  275.716
+error is ;  0.6099807279806552
+ 121MSDCF_DSC02527.png saved once
+Optimization terminated successfully.
+         Current function value: 101711.109479
+         Iterations: 75
+         Function evaluations: 145
+est is ;  [ 2.64474383  1.00272904  1.7386068 ]
+gt is ;  [ 2.65625    1.         1.7109375]
+cofindece_r:  303.764
+cofindece_b:  364.51
+error is ;  0.5093113905912945
+ 119MSDCF_DSC01459.png saved once
+Optimization terminated successfully.
+         Current function value: 668380.428198
+         Iterations: 83
+         Function evaluations: 158
+est is ;  [ 2.58006643  1.00114298  1.77710667]
+gt is ;  [ 2.5625     1.         1.7734375]
+cofindece_r:  279.274
+cofindece_b:  296.161
+error is ;  0.13947490900378595
+ 119MSDCF_DSC01160.png saved once
+Optimization terminated successfully.
+         Current function value: 40906.861662
+         Iterations: 96
+         Function evaluations: 173
+est is ;  [ 2.78489655  1.00329861  1.70719767]
+gt is ;  [ 2.86328125  1.          1.6171875 ]
+cofindece_r:  547.435
+cofindece_b:  568.317
+error is ;  1.9682388416347174
+ 114MSDCF_DSC00874.png saved once
+Optimization terminated successfully.
+         Current function value: 210843.355877
+         Iterations: 91
+         Function evaluations: 166
+est is ;  [ 1.51187948  1.0058758   3.39044477]
+gt is ;  [ 1.38671875  1.          3.671875  ]
+cofindece_r:  561.013
+cofindece_b:  127.281
+error is ;  3.3480220154084783
+ 119MSDCF_DSC01361.png saved once
+Optimization terminated successfully.
+         Current function value: 206844.632099
+         Iterations: 85
+         Function evaluations: 155
+est is ;  [ 2.69609062  1.00372032  1.97296813]
+gt is ;  [ 2.53515625  1.          2.1484375 ]
+cofindece_r:  340.223
+cofindece_b:  368.691
+error is ;  3.9107057749009995
+ 120MSDCF_DSC02140.png saved once
+Optimization terminated successfully.
+         Current function value: 12965.184378
+         Iterations: 86
+         Function evaluations: 158
+est is ;  [ 2.56205472  1.00424055  1.81184976]
+gt is ;  [ 2.484375    1.          1.83203125]
+cofindece_r:  569.903
+cofindece_b:  469.707
+error is ;  1.1027915786013485
+ 116MSDCF_DSC00059.png saved once
+Optimization terminated successfully.
+         Current function value: 122927.063809
+         Iterations: 89
+         Function evaluations: 163
+est is ;  [ 1.64820637  1.00491495  3.06189287]
+gt is ;  [ 1.6171875   1.          3.23046875]
+cofindece_r:  567.902
+cofindece_b:  226.709
+error is ;  1.7595405231264647
+ 116MSDCF_DSC00233.png saved once
+Optimization terminated successfully.
+         Current function value: 42755.172837
+         Iterations: 92
+         Function evaluations: 167
+est is ;  [ 2.16994804  1.00333624  2.28952984]
+gt is ;  [ 2.10546875  1.          2.32421875]
+cofindece_r:  552.836
+cofindece_b:  408.913
+error is ;  1.2309215753618776
+ 118MSDCF_DSC01874.png saved once
+Optimization terminated successfully.
+         Current function value: 468104.488836
+         Iterations: 77
+         Function evaluations: 141
+est is ;  [ 2.72061724  1.00217386  1.72850737]
+gt is ;  [ 2.8125     1.         1.9140625]
+cofindece_r:  200.283
+cofindece_b:  262.117
+error is ;  1.946667101384954
+ 120MSDCF_DSC01983.png saved once
+Optimization terminated successfully.
+         Current function value: 29502.652777
+         Iterations: 78
+         Function evaluations: 146
+est is ;  [ 2.51707371  1.00531032  1.88479213]
+gt is ;  [ 2.453125  1.        1.859375]
+cofindece_r:  590.628
+cofindece_b:  333.941
+error is ;  0.4164637937955048
+ 113MSDCF_DSC09869.png saved once
+Optimization terminated successfully.
+         Current function value: 34332.605044
+         Iterations: 90
+         Function evaluations: 166
+est is ;  [ 2.64165596  1.00386768  1.75423349]
+gt is ;  [ 2.55859375  1.          1.75      ]
+cofindece_r:  457.738
+cofindece_b:  462.135
+error is ;  0.8099189486243734
+ 115MSDCF_DSC09893.png saved once
+Optimization terminated successfully.
+         Current function value: 93778.724049
+         Iterations: 94
+         Function evaluations: 173
+est is ;  [ 2.77220197  1.00338642  1.71851232]
+gt is ;  [ 2.9296875   1.          1.63671875]
+cofindece_r:  351.575
+cofindece_b:  534.375
+error is ;  2.5436093576325054
+ 121MSDCF_DSC02472.png saved once
+Optimization terminated successfully.
+         Current function value: 919587.937693
+         Iterations: 81
+         Function evaluations: 151
+est is ;  [ 2.49356058  1.00183919  1.75088974]
+gt is ;  [ 2.5859375   1.          1.78515625]
+cofindece_r:  284.139
+cofindece_b:  201.955
+error is ;  0.6995040905661261
+ 120MSDCF_DSC02446.png saved once
+Optimization terminated successfully.
+         Current function value: 163358.900534
+         Iterations: 87
+         Function evaluations: 158
+est is ;  [ 2.43540222  1.00446221  1.97588042]
+gt is ;  [ 2.359375    1.          1.95703125]
+cofindece_r:  427.656
+cofindece_b:  304.117
+error is ;  0.6669491577887665
+ 119MSDCF_DSC01590.png saved once
+Optimization terminated successfully.
+         Current function value: 49386.283394
+         Iterations: 101
+         Function evaluations: 178
+est is ;  [ 2.61650155  1.00324839  1.76637864]
+gt is ;  [ 2.56640625  1.          1.76953125]
+cofindece_r:  412.69
+cofindece_b:  387.489
+error is ;  0.5585611847033596
+ 120MSDCF_DSC02254.png saved once
+Optimization terminated successfully.
+         Current function value: 120885.361208
+         Iterations: 94
+         Function evaluations: 169
+est is ;  [ 2.64605123  1.00348769  1.73277268]
+gt is ;  [ 2.59765625  1.          1.74609375]
+cofindece_r:  311.581
+cofindece_b:  281.33
+error is ;  0.6670680117837237
+ 116MSDCF_DSC00387.png saved once
+Optimization terminated successfully.
+         Current function value: 53172.148912
+         Iterations: 95
+         Function evaluations: 170
+est is ;  [ 2.17417311  1.00374037  2.31479959]
+gt is ;  [ 2.125       1.          2.33984375]
+cofindece_r:  451.133
+cofindece_b:  265.527
+error is ;  0.9159080182910685
+ 118MSDCF_DSC01824.png saved once
+Optimization terminated successfully.
+         Current function value: 679042.083794
+         Iterations: 90
+         Function evaluations: 168
+est is ;  [ 2.63681     1.00343565  1.85339419]
+gt is ;  [ 2.546875  1.        1.84375 ]
+cofindece_r:  238.597
+cofindece_b:  258.931
+error is ;  0.8382718910525161
+ 117MSDCF_DSC00989.png saved once
+Optimization terminated successfully.
+         Current function value: 40148.488825
+         Iterations: 92
+         Function evaluations: 169
+est is ;  [ 2.73116072  1.00417407  1.73637553]
+gt is ;  [ 2.71875   1.        1.703125]
+cofindece_r:  383.945
+cofindece_b:  458.098
+error is ;  0.37266144897907505
+ 120MSDCF_DSC02284.png saved once
+Optimization terminated successfully.
+         Current function value: 139543.392868
+         Iterations: 80
+         Function evaluations: 149
+est is ;  [ 2.61835544  1.00329123  1.757271  ]
+gt is ;  [ 2.59375  1.       1.75   ]
+cofindece_r:  297.298
+cofindece_b:  278.207
+error is ;  0.15408127582540124
+ 120MSDCF_DSC02031.png saved once
+Optimization terminated successfully.
+         Current function value: 462703.812925
+         Iterations: 77
+         Function evaluations: 141
+est is ;  [ 2.63636463  1.00285572  1.8413354 ]
+gt is ;  [ 2.546875    1.          1.78515625]
+cofindece_r:  164.584
+cofindece_b:  186.424
+error is ;  0.5115572321981652
+ 116MSDCF_DSC00264.png saved once
+Optimization terminated successfully.
+         Current function value: 29463.869636
+         Iterations: 95
+         Function evaluations: 170
+est is ;  [ 2.16750321  1.00370379  2.28520882]
+gt is ;  [ 2.11328125  1.          2.3203125 ]
+cofindece_r:  480.76
+cofindece_b:  383.56
+error is ;  1.1045007344037026
+ 118MSDCF_DSC01712.png saved once
+Optimization terminated successfully.
+         Current function value: 319524.202156
+         Iterations: 74
+         Function evaluations: 138
+est is ;  [ 2.6873666   1.00214262  1.7209128 ]
+gt is ;  [ 2.578125    1.          1.76171875]
+cofindece_r:  276.738
+cofindece_b:  271.573
+error is ;  1.6633620617691838
+ 120MSDCF_DSC02114.png saved once
+Optimization terminated successfully.
+         Current function value: 89118.533213
+         Iterations: 81
+         Function evaluations: 152
+est is ;  [ 2.58136663  1.00370517  1.79158692]
+gt is ;  [ 2.55078125  1.          1.78125   ]
+cofindece_r:  371.443
+cofindece_b:  341.484
+error is ;  0.1884288505247578
+ 113MSDCF_DSC09628.png saved once
+Optimization terminated successfully.
+         Current function value: 811584.820864
+         Iterations: 86
+         Function evaluations: 156
+est is ;  [ 2.56993792  1.00170828  1.88086721]
+gt is ;  [ 2.5625     1.         2.0859375]
+cofindece_r:  351.166
+cofindece_b:  270.622
+error is ;  2.883855650994175
+ 115MSDCF_DSC09985.png saved once
+Optimization terminated successfully.
+         Current function value: 40115.423234
+         Iterations: 88
+         Function evaluations: 162
+est is ;  [ 2.77484184  1.00353927  1.69906053]
+gt is ;  [ 2.78515625  1.          1.65625   ]
+cofindece_r:  385.444
+cofindece_b:  558.472
+error is ;  0.7078465160354362
+ 119MSDCF_DSC01632.png saved once
+Optimization terminated successfully.
+         Current function value: 134964.387668
+         Iterations: 97
+         Function evaluations: 170
+est is ;  [ 2.59387512  1.00287741  1.78804305]
+gt is ;  [ 2.546875    1.          1.78515625]
+cofindece_r:  280.256
+cofindece_b:  525.722
+error is ;  0.4577170309597307
+ 114MSDCF_DSC00878.png saved once
+Optimization terminated successfully.
+         Current function value: 183624.216377
+         Iterations: 85
+         Function evaluations: 155
+est is ;  [ 1.54371812  1.00449607  3.27507311]
+gt is ;  [ 1.3828125  1.         3.6796875]
+cofindece_r:  526.703
+cofindece_b:  106.826
+error is ;  4.651399889091434
+ 113MSDCF_DSC09680.png saved once
+Optimization terminated successfully.
+         Current function value: 301405.769420
+         Iterations: 80
+         Function evaluations: 148
+est is ;  [ 2.5792203   1.0033749   1.80465259]
+gt is ;  [ 2.53125  1.       1.8125 ]
+cofindece_r:  417.603
+cofindece_b:  339.114
+error is ;  0.6082021867919891
+ 119MSDCF_DSC01139.png saved once
+Optimization terminated successfully.
+         Current function value: 117091.054503
+         Iterations: 89
+         Function evaluations: 166
+est is ;  [ 2.60132188  1.0033921   1.75696964]
+gt is ;  [ 2.5859375   1.          1.72265625]
+cofindece_r:  432.152
+cofindece_b:  468.429
+error is ;  0.36607160278407563
+ 117MSDCF_DSC00932.png saved once
+Optimization terminated successfully.
+         Current function value: 46336.454540
+         Iterations: 94
+         Function evaluations: 171
+est is ;  [ 2.8051179   1.00298112  1.70043431]
+gt is ;  [ 2.88671875  1.          1.62109375]
+cofindece_r:  326.075
+cofindece_b:  637.252
+error is ;  1.8345420935412853
+ 119MSDCF_DSC01327.png saved once
+Optimization terminated successfully.
+         Current function value: 655735.328269
+         Iterations: 86
+         Function evaluations: 159
+est is ;  [ 2.51874053  1.0028126   1.81945641]
+gt is ;  [ 2.52734375  1.          2.1796875 ]
+cofindece_r:  138.21
+cofindece_b:  124.925
+error is ;  4.862009953631533
+ 120MSDCF_DSC01951.png saved once
+Optimization terminated successfully.
+         Current function value: 45173.107433
+         Iterations: 99
+         Function evaluations: 177
+est is ;  [ 2.64442531  1.00278983  1.74506323]
+gt is ;  [ 2.6171875  1.         1.734375 ]
+cofindece_r:  358.256
+cofindece_b:  446.646
+error is ;  0.14905449512625393
+ 119MSDCF_DSC01081.png saved once
+Optimization terminated successfully.
+         Current function value: 159490.440240
+         Iterations: 94
+         Function evaluations: 172
+est is ;  [ 2.7238688   1.00296575  1.71224238]
+gt is ;  [ 2.98046875  1.          1.57421875]
+cofindece_r:  321.963
+cofindece_b:  638.053
+error is ;  4.199903867662327
+ 116MSDCF_DSC00310.png saved once
+Optimization terminated successfully.
+         Current function value: 73715.368816
+         Iterations: 95
+         Function evaluations: 167
+est is ;  [ 2.17545034  1.00382985  2.25829447]
+gt is ;  [ 2.16015625  1.          2.265625  ]
+cofindece_r:  536.718
+cofindece_b:  472.792
+error is ;  0.2829329412003501
+ 122MSDCF_DSC02757.png saved once
+Optimization terminated successfully.
+         Current function value: 101339.870898
+         Iterations: 79
+         Function evaluations: 146
+est is ;  [ 2.67114299  1.00245181  1.77445232]
+gt is ;  [ 2.65625  1.       1.71875]
+cofindece_r:  457.265
+cofindece_b:  375.188
+error is ;  0.6835781173389046
+ 120MSDCF_DSC02021.png saved once
+Optimization terminated successfully.
+         Current function value: 61221.167044
+         Iterations: 83
+         Function evaluations: 155
+est is ;  [ 2.64478232  1.0035378   1.74689438]
+gt is ;  [ 2.59765625  1.          1.75      ]
+cofindece_r:  299.362
+cofindece_b:  329.526
+error is ;  0.5167108734987852
+ 120MSDCF_DSC02333.png saved once
+Optimization terminated successfully.
+         Current function value: 36609.344097
+         Iterations: 78
+         Function evaluations: 144
+est is ;  [ 2.49667878  1.0044862   1.87048082]
+gt is ;  [ 2.46875     1.          1.84765625]
+cofindece_r:  495.14
+cofindece_b:  334.163
+error is ;  0.12213942754516242
+ 119MSDCF_DSC01425.png saved once
+Optimization terminated successfully.
+         Current function value: 695213.934463
+         Iterations: 87
+         Function evaluations: 159
+est is ;  [ 2.52818651  1.00322979  1.80480828]
+gt is ;  [ 2.53515625  1.          1.8671875 ]
+cofindece_r:  149.837
+cofindece_b:  132.991
+error is ;  0.8562946409066424
+ 114MSDCF_DSC00811.png saved once
+Optimization terminated successfully.
+         Current function value: 223295.194497
+         Iterations: 86
+         Function evaluations: 159
+est is ;  [ 1.51297352  1.00556854  3.40582004]
+gt is ;  [ 1.40234375  1.          3.62109375]
+cofindece_r:  592.885
+cofindece_b:  124.294
+error is ;  2.769998121636729
+ 118MSDCF_DSC01726.png saved once
+Optimization terminated successfully.
+         Current function value: 459481.312848
+         Iterations: 86
+         Function evaluations: 151
+est is ;  [ 2.53914871  1.00237725  1.83401916]
+gt is ;  [ 2.55078125  1.          1.78125   ]
+cofindece_r:  302.063
+cofindece_b:  233.951
+error is ;  0.8727830151385524
+ 116MSDCF_DSC00013.png saved once
+Optimization terminated successfully.
+         Current function value: 59826.811822
+         Iterations: 98
+         Function evaluations: 176
+est is ;  [ 2.77585364  1.00345896  1.71376202]
+gt is ;  [ 2.8515625   1.          1.66015625]
+cofindece_r:  376.652
+cofindece_b:  587.45
+error is ;  1.4379990496836743
+ 121MSDCF_DSC02690.png saved once
+Optimization terminated successfully.
+         Current function value: 123083.788861
+         Iterations: 82
+         Function evaluations: 147
+est is ;  [ 2.63129874  1.00349515  1.75905354]
+gt is ;  [ 2.59375  1.       1.75   ]
+cofindece_r:  257.259
+cofindece_b:  275.996
+error is ;  0.2684525520499615
+ 114MSDCF_DSC00885.png saved once
+Optimization terminated successfully.
+         Current function value: 147820.450208
+         Iterations: 96
+         Function evaluations: 171
+est is ;  [ 1.5334276   1.00426019  3.27703071]
+gt is ;  [ 1.37890625  1.          3.69921875]
+cofindece_r:  557.721
+cofindece_b:  120.221
+error is ;  4.662454288528416
+ 113MSDCF_DSC09847.png saved once
+Optimization terminated successfully.
+         Current function value: 63723.817486
+         Iterations: 80
+         Function evaluations: 149
+est is ;  [ 2.64287794  1.00417933  1.75332493]
+gt is ;  [ 2.55078125  1.          1.76171875]
+cofindece_r:  386.858
+cofindece_b:  423.916
+error is ;  1.0655567743312553
+ 118MSDCF_DSC01768.png saved once
+Optimization terminated successfully.
+         Current function value: 12334.874809
+         Iterations: 84
+         Function evaluations: 153
+est is ;  [ 2.53383416  1.00437925  1.83352978]
+gt is ;  [ 2.45703125  1.          1.85546875]
+cofindece_r:  507.73
+cofindece_b:  397.639
+error is ;  1.1281748166500705
+ 120MSDCF_DSC02358.png saved once
+Optimization terminated successfully.
+         Current function value: 119462.188209
+         Iterations: 87
+         Function evaluations: 161
+est is ;  [ 2.58146361  1.00324625  1.79469436]
+gt is ;  [ 2.49609375  1.          1.8203125 ]
+cofindece_r:  388.31
+cofindece_b:  290.865
+error is ;  1.2548436525172342
+ 120MSDCF_DSC02347.png saved once
+Optimization terminated successfully.
+         Current function value: 121915.164438
+         Iterations: 89
+         Function evaluations: 160
+est is ;  [ 2.53717272  1.00378469  1.83221581]
+gt is ;  [ 2.515625    1.          1.80859375]
+cofindece_r:  395.343
+cofindece_b:  251.563
+error is ;  0.15495934354406046
+ 122MSDCF_DSC02753.png saved once
+Optimization terminated successfully.
+         Current function value: 21772.459793
+         Iterations: 103
+         Function evaluations: 189
+est is ;  [ 2.5989089   1.00367824  1.78093598]
+gt is ;  [ 2.57421875  1.          1.76171875]
+cofindece_r:  382.141
+cofindece_b:  490.395
+error is ;  0.10922578604543526
+ 122MSDCF_DSC02935.png saved once
+Optimization terminated successfully.
+         Current function value: 110488.952782
+         Iterations: 84
+         Function evaluations: 158
+est is ;  [ 2.72392188  1.00309463  1.69649699]
+gt is ;  [ 2.734375  1.        1.640625]
+cofindece_r:  290.357
+cofindece_b:  455.487
+error is ;  0.909588477279871
+ 114MSDCF_DSC00541.png saved once
+Optimization terminated successfully.
+         Current function value: 41306.745461
+         Iterations: 101
+         Function evaluations: 180
+est is ;  [ 2.3668677   1.00332649  2.52253317]
+gt is ;  [ 2.328125   1.         2.4921875]
+cofindece_r:  472.284
+cofindece_b:  408.734
+error is ;  0.20593270563508365
+ 119MSDCF_DSC01594.png saved once
+Optimization terminated successfully.
+         Current function value: 43000.498152
+         Iterations: 93
+         Function evaluations: 169
+est is ;  [ 2.63352745  1.00285792  1.75718795]
+gt is ;  [ 2.56640625  1.          1.76953125]
+cofindece_r:  307.564
+cofindece_b:  489.665
+error is ;  0.8580474386674575
+ 114MSDCF_DSC01082.png saved once
+Optimization terminated successfully.
+         Current function value: 48914.780021
+         Iterations: 85
+         Function evaluations: 159
+est is ;  [ 2.78586813  1.00343397  1.70393165]
+gt is ;  [ 2.81640625  1.          1.6484375 ]
+cofindece_r:  376.202
+cofindece_b:  538.653
+error is ;  1.063103648552112
+ 116MSDCF_DSC00135.png saved once
+Optimization terminated successfully.
+         Current function value: 140924.874695
+         Iterations: 94
+         Function evaluations: 175
+est is ;  [ 1.66084202  1.00561137  3.18779569]
+gt is ;  [ 1.58203125  1.          3.4609375 ]
+cofindece_r:  531.295
+cofindece_b:  181.666
+error is ;  2.991316487342285
+ 120MSDCF_DSC01958.png saved once
+Optimization terminated successfully.
+         Current function value: 14342.999256
+         Iterations: 105
+         Function evaluations: 189
+est is ;  [ 2.65432964  1.00367439  1.74433935]
+gt is ;  [ 2.61328125  1.          1.73828125]
+cofindece_r:  319.996
+cofindece_b:  447.77
+error is ;  0.3334171930371438
+ 119MSDCF_DSC01095.png saved once
+Optimization terminated successfully.
+         Current function value: 161805.279072
+         Iterations: 84
+         Function evaluations: 158
+est is ;  [ 2.76680276  1.00262974  1.70918037]
+gt is ;  [ 2.8203125   1.          1.64453125]
+cofindece_r:  338.376
+cofindece_b:  531.214
+error is ;  1.3985101767000707
+ 118MSDCF_DSC01760.png saved once
+Optimization terminated successfully.
+         Current function value: 12810.036046
+         Iterations: 103
+         Function evaluations: 184
+est is ;  [ 2.49973659  1.00478267  1.86554109]
+gt is ;  [ 2.40234375  1.          1.90625   ]
+cofindece_r:  520.977
+cofindece_b:  378.864
+error is ;  1.6281910342762302
+ 117MSDCF_DSC00975.png saved once
+Optimization terminated successfully.
+         Current function value: 33910.730027
+         Iterations: 95
+         Function evaluations: 169
+est is ;  [ 2.73290928  1.00406842  1.74203031]
+gt is ;  [ 2.66015625  1.          1.71875   ]
+cofindece_r:  435.307
+cofindece_b:  456.313
+error is ;  0.45736638201426927
+ 116MSDCF_DSC00033.png saved once
+Optimization terminated successfully.
+         Current function value: 106418.333800
+         Iterations: 99
+         Function evaluations: 178
+est is ;  [ 2.75179632  1.00344849  1.73871982]
+gt is ;  [ 2.8046875   1.          1.66015625]
+cofindece_r:  394.342
+cofindece_b:  434.838
+error is ;  1.5927385204157798
+ 114MSDCF_DSC01102.png saved once
+Optimization terminated successfully.
+         Current function value: 65065.267468
+         Iterations: 90
+         Function evaluations: 164
+est is ;  [ 2.73844615  1.00372174  1.73209179]
+gt is ;  [ 2.74609375  1.          1.7109375 ]
+cofindece_r:  338.746
+cofindece_b:  406.652
+error is ;  0.3733146116330333
+ 120MSDCF_DSC02332.png saved once
+Optimization terminated successfully.
+         Current function value: 11803.819413
+         Iterations: 82
+         Function evaluations: 152
+est is ;  [ 2.51373804  1.00457805  1.85848517]
+gt is ;  [ 2.44921875  1.          1.859375  ]
+cofindece_r:  527.081
+cofindece_b:  370.305
+error is ;  0.7209546426884613
+ 120MSDCF_DSC02067.png saved once
+Optimization terminated successfully.
+         Current function value: 229777.614719
+         Iterations: 79
+         Function evaluations: 148
+est is ;  [ 2.50762651  1.00270468  1.87805341]
+gt is ;  [ 2.4609375  1.         1.8515625]
+cofindece_r:  312.956
+cofindece_b:  225.963
+error is ;  0.26964906627233076
+ 116MSDCF_DSC00462.png saved once
+Optimization terminated successfully.
+         Current function value: 112311.492059
+         Iterations: 87
+         Function evaluations: 158
+est is ;  [ 2.1377122   1.00430964  2.35567714]
+gt is ;  [ 2.10546875  1.          2.4375    ]
+cofindece_r:  515.184
+cofindece_b:  297.358
+error is ;  1.3667048809460869
+ 116MSDCF_DSC00389.png saved once
+Optimization terminated successfully.
+         Current function value: 55370.484317
+         Iterations: 93
+         Function evaluations: 167
+est is ;  [ 2.1790139   1.00382904  2.31343885]
+gt is ;  [ 2.12890625  1.          2.34765625]
+cofindece_r:  412.858
+cofindece_b:  216.467
+error is ;  1.0334227663822149
+ 120MSDCF_DSC01984.png saved once
+Optimization terminated successfully.
+         Current function value: 29391.623262
+         Iterations: 90
+         Function evaluations: 164
+est is ;  [ 2.64870693  1.00307307  1.74039846]
+gt is ;  [ 2.59765625  1.          1.74609375]
+cofindece_r:  363.277
+cofindece_b:  307.145
+error is ;  0.593066371086457
+ 114MSDCF_DSC00860.png saved once
+Optimization terminated successfully.
+         Current function value: 68073.736970
+         Iterations: 90
+         Function evaluations: 163
+est is ;  [ 1.51497226  1.00470039  3.36387081]
+gt is ;  [ 1.37109375  1.          3.69921875]
+cofindece_r:  694.37
+cofindece_b:  119.442
+error is ;  3.91242000729349
+ 119MSDCF_DSC01351.png saved once
+Optimization terminated successfully.
+         Current function value: 608362.431502
+         Iterations: 96
+         Function evaluations: 174
+est is ;  [ 2.61481518  1.00189545  1.78566769]
+gt is ;  [ 2.62890625  1.          1.7421875 ]
+cofindece_r:  191.836
+cofindece_b:  233.318
+error is ;  0.7602463016831005
+ 117MSDCF_DSC01017.png saved once
+Optimization terminated successfully.
+         Current function value: 68721.695709
+         Iterations: 95
+         Function evaluations: 172
+est is ;  [ 2.77384134  1.00329203  1.71043334]
+gt is ;  [ 2.8203125  1.         1.6484375]
+cofindece_r:  258.787
+cofindece_b:  1132.23
+error is ;  1.2970909434617954
+ 120MSDCF_DSC02383.png saved once
+Optimization terminated successfully.
+         Current function value: 315282.144296
+         Iterations: 82
+         Function evaluations: 155
+est is ;  [ 2.5858977   1.00301928  1.75662937]
+gt is ;  [ 2.609375    1.          1.73828125]
+cofindece_r:  342.837
+cofindece_b:  216.294
+error is ;  0.5034751296258526
+ 114MSDCF_DSC01090.png saved once
+Optimization terminated successfully.
+         Current function value: 76409.338617
+         Iterations: 87
+         Function evaluations: 157
+est is ;  [ 2.73872806  1.00382838  1.76960491]
+gt is ;  [ 2.6953125  1.         1.7734375]
+cofindece_r:  395.096
+cofindece_b:  534.412
+error is ;  0.4674257276384463
+ 114MSDCF_DSC00985.png saved once
+Optimization terminated successfully.
+         Current function value: 18750.913050
+         Iterations: 87
+         Function evaluations: 161
+est is ;  [ 2.83405308  1.00330301  1.67748121]
+gt is ;  [ 2.84765625  1.          1.625     ]
+cofindece_r:  395.182
+cofindece_b:  589.052
+error is ;  0.8710607985453166
+ 121MSDCF_DSC02552.png saved once
+Optimization terminated successfully.
+         Current function value: 263619.975768
+         Iterations: 85
+         Function evaluations: 151
+est is ;  [ 2.59060256  0.99822067  1.77598224]
+gt is ;  [ 2.52734375  1.          1.796875  ]
+cofindece_r:  248.649
+cofindece_b:  207.464
+error is ;  0.96358481640521
+ 118MSDCF_DSC01682.png saved once
+Optimization terminated successfully.
+         Current function value: 250982.385782
+         Iterations: 81
+         Function evaluations: 150
+est is ;  [ 2.61779667  1.00348367  1.75358578]
+gt is ;  [ 2.59765625  1.          1.74609375]
+cofindece_r:  324.387
+cofindece_b:  333.142
+error is ;  0.10212700449021919
+ 120MSDCF_DSC02211.png saved once
+Optimization terminated successfully.
+         Current function value: 453856.945723
+         Iterations: 84
+         Function evaluations: 152
+est is ;  [ 2.60490726  1.00211389  1.83706   ]
+gt is ;  [ 2.484375    1.          1.83203125]
+cofindece_r:  305.31
+cofindece_b:  199.268
+error is ;  1.2584683015832483
+ 114MSDCF_DSC01049.png saved once
+Optimization terminated successfully.
+         Current function value: 48877.286538
+         Iterations: 89
+         Function evaluations: 163
+est is ;  [ 2.84381631  1.00296304  1.68375431]
+gt is ;  [ 2.83984375  1.          1.66015625]
+cofindece_r:  243.952
+cofindece_b:  579.35
+error is ;  0.30561535268668366
+ 118MSDCF_DSC01771.png saved once
+Optimization terminated successfully.
+         Current function value: 118103.771433
+         Iterations: 81
+         Function evaluations: 153
+est is ;  [ 2.46977952  1.0046315   1.89182626]
+gt is ;  [ 2.421875    1.          1.88671875]
+cofindece_r:  393.589
+cofindece_b:  283.068
+error is ;  0.4685560835655372
+ 118MSDCF_DSC01720.png saved once
+Optimization terminated successfully.
+         Current function value: 150864.046804
+         Iterations: 93
+         Function evaluations: 172
+est is ;  [ 2.50816338  1.0040594   1.84364283]
+gt is ;  [ 2.47265625  1.          1.83984375]
+cofindece_r:  404.668
+cofindece_b:  395.792
+error is ;  0.33283920982990306
+100 images tested. Results:
+25: 0.269,
+med: 0.741
+tri: 0.830
+avg: 1.144
+75: 2.693
+95: 3.911
