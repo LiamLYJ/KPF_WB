@@ -119,6 +119,12 @@ if __name__ == '__main__':
     # file_name = './log_tmp.txt'
     file_name = './log.txt'
     error, confi_r, confi_b, file_name = get_data(file_name)
+    r_bias = 0
+    b_bias = 0
+    r_scale = 1
+    b_scale = 1
+    confi_r = (confi_r + r_bias) * r_scale
+    confi_b = (confi_b + b_bias) * b_scale
     confi = np.concatenate([confi_r, confi_b], axis = -1)
     confi_norm = np.expand_dims(np.linalg.norm(confi, axis = -1), -1)
     print (confi_norm.shape)

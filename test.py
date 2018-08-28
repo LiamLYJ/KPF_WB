@@ -19,8 +19,8 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string('ckpt_path', './logs_cube/',
                     'Directory where to write training.')
-# flags.DEFINE_string('save_dir', './save_dir_cube', 'Directoru to save test results')
-flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
+flags.DEFINE_string('save_dir', './save_dir_cube', 'Directoru to save test results')
+# flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
 flags.DEFINE_string('dataset_dir', './data/cube', '')
 flags.DEFINE_string('dataset_file_name', './data_txt_file/cube_val.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
