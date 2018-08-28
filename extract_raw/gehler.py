@@ -70,15 +70,12 @@ def make_txt_file(img_list, mat, save_dir = None):
 
                 if 'IMG' in item_name:
                     raw = np.maximum(img_cv2 - 129, [0,0,0])
-                    img12 = ( raw / (2**12 -1)) * 100.0
                 else:
                     raw = np.maximum(img_cv2 - 1, [0,0,0])
-                    img12 = ( raw / (2**12 -1)) * 100.0
 
                 if save_dir is not None:
-                    image = convert_to_8bit(img12, 2.5)
-
-                    image = cv2.resize(image, (512,512))
+                    img8 = (np.clip(raw / raw.max(), 0, 1) * 255.0).astype(np.uint8)
+                    image = cv2.resize(img8, (512,512))
                     save_name = os.path.join(save_dir,item_name.split('/')[-1])
                     cv2.imwrite(save_name, image)
 
@@ -100,11 +97,30 @@ def make_txt_file(img_list, mat, save_dir = None):
                 # print ('Gain_B:', Gain_B)
 
 
+def make_img(img_list, save_dir):
+    all_num = len(img_list)
+    for item_name in img_list:
+        img_cv2 = cv2.imread(item_name, cv2.IMREAD_UNCHANGED).astype(np.float32)
+
+        if 'IMG' in item_name:
+            raw = np.maximum(img_cv2 - 129, [0,0,0])
+        else:
+            raw = np.maximum(img_cv2 - 1, [0,0,0])
+
+        # img16 = (np.clip(raw / raw.max(), 0, 1) * 65535.0).astype(np.uint16)
+        img8 = (np.clip(raw / raw.max(), 0, 1) * 255.0).astype(np.uint8)
+
+        image = cv2.resize(img8, (512,512))
+        save_name = os.path.join(save_dir,item_name.split('/')[-1])
+        cv2.imwrite(save_name, image)
+
+
 if __name__ == '__main__':
-    data_path = '/Users/lyj/Desktop/gehler_original'
+    data_path = '/Users/lyj/Documents/AWB_data/gehler_original'
     img_list = glob(os.path.join(data_path, '*.png'))
     img_list = sorted(img_list)
 
-    mat = (scipy.io.loadmat('/Users/lyj/Desktop/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
-    make_txt_file(img_list, mat, '/Users/lyj/Desktop/gehler')
+    mat = (scipy.io.loadmat('/Users/lyj/Documents/AWB_data/gehler_original/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
+    # make_txt_file(img_list, mat, '/Users/lyj/Desktop/gehler')
+    make_img(img_list, '/Users/lyj/Desktop/gehler_8')
     # check_gehler(img_list, mat)

@@ -108,9 +108,7 @@ def make_txt_file(data_path, save_dir = None, id = 0):
 
         processed_raw = load_image(fn, extras['darkness_level'], extras['saturation_level'])
 
-        img12 = (processed_raw / (2**16 -1)) * 100.0
-
-        image = convert_to_8bit(img12, 2.5)
+        img8 = (np.clip(processed_raw / processed_raw.max(), 0, 1) * 255.0).astype(np.uint8)
         imgae = cv2.imresize(image, (512,512))
 
         if save_dir is not None:
