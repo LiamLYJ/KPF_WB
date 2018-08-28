@@ -98,8 +98,8 @@ def test(FLAGS):
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
                 est = utils.solve_gain(input_image_[batch_i], predict_image_[batch_i])
-                print ('cofindece_r: ', batch_confidence_r[batch_i])
-                print ('cofindece_b: ', batch_confidence_b[batch_i])
+                print ('confidence_r: ', batch_confidence_r[batch_i])
+                print ('confidence_b: ', batch_confidence_b[batch_i])
 
                 if FLAGS.use_ms:
                     save_file_name = '%03d_%02d.png'%(i_step,batch_i)
