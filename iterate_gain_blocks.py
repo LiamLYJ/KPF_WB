@@ -55,9 +55,13 @@ for srcImg in srcImgPaths:
     height = gain_map.shape[1]
 
     gain_map.resize((width*height, gain_map.shape[2]))
+    # gain_map = gain_map/np.linalg.norm(gain_map)
     print("gain map min: ", np.amin(gain_map), " max: ", np.amax(gain_map))
 
-    db = DBSCAN(eps=0.10, min_samples=10*10).fit(gain_map)
+    # db = DBSCAN(eps=0.10, min_samples=10*10).fit(gain_map)
+    # def unitDist(A, B):
+    #     return np.mean(np.square(A-B))
+    db = DBSCAN(eps=0.0001, metric="cosine", min_samples=10*10).fit(gain_map)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
     labels = db.labels_
