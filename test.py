@@ -17,12 +17,12 @@ flags.DEFINE_integer('batch_size', 20, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('ckpt_path', './logs_cube/',
+flags.DEFINE_string('ckpt_path', './logs_nus/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', './save_dir_cube', 'Directoru to save test results')
-# flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', './data/cube', '')
-flags.DEFINE_string('dataset_file_name', './data_txt_file/cube_val.txt','')
+# flags.DEFINE_string('save_dir', './save_dir_cube', 'Directoru to save test results')
+flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
+flags.DEFINE_string('dataset_dir', './data/nus', '')
+flags.DEFINE_string('dataset_file_name', './data_txt_file/NUS_val.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 
@@ -49,7 +49,12 @@ def test(FLAGS):
                                                      shuffle = False, use_ms = False, with_file_name_gain = True)
 
     with tf.variable_scope('generator'):
-        filters = net.convolve_net(input_image, final_K, final_W, ch0=64, N=3, D=3,
+        if FLAGS.patch_size == 128:
+            N_size = 3
+        else:
+            N_size = 2
+        filters = net.convolve_net(input_image, final_K, final_W, ch0=64,
+                                   N=N_size, D=3,
                       scope='get_filted', separable=False, bonus=False)
     predict_image = net.convolve(input_image, filters, final_K, final_W)
 
