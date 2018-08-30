@@ -13,7 +13,7 @@ import data_provider
 flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
-    'patch_size', 128, 'The height/width of images in each batch.')
+    'patch_size', 64, 'The height/width of images in each batch.')
 
 flags.DEFINE_string('train_log_dir', './logs_nus_1x1_64/',
                     'Directory where to write training.')
