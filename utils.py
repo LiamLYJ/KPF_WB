@@ -3,6 +3,7 @@ import numpy as np
 import operator
 import math
 from scipy import optimize
+from scipy.stats import gmean
 
 def get_concat(input,gt,est):
     concat = np.concatenate([input, gt, est], axis = 2) / 255.0
@@ -115,6 +116,7 @@ def summary_angular_errors(errors):
 
     median = g(0.5)
     mean = np.mean(errors)
+    gm = gmean(errors)
     trimean = 0.25 * (g(0.25) + 2 * g(0.5) + g(0.75))
     results = {
         '25': np.mean(errors[:int(0.25 * len(errors))]),
@@ -122,7 +124,8 @@ def summary_angular_errors(errors):
         '95': g(0.95),
         'tri': trimean,
         'med': median,
-        'mean': mean
+        'mean': mean,
+        'gm': gm
     }
     return results
 
@@ -134,6 +137,7 @@ def just_print_angular_errors(results):
     print ("avg: %5.3f" % results['mean'],)
     print ("75: %5.3f" % results['75'],)
     print ("95: %5.3f" % results['95'])
+    print ("gm: %5.3f" % results['gm'])
 
 
 def print_angular_errors(errors):
