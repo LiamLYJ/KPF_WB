@@ -47,11 +47,10 @@ def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch):
     img_stack = np.stack(img_stack, axis = -2) #[batch, h,w, K**2 ,ch]
     img_stack = np.reshape(img_stack, [img_sh[0], h, w, final_K**2, input_ch])
     filts = np.reshape(filts, [img_sh[0],h,w,final_K**2, input_ch, final_W])
-    filts = np.squeeze(filts[...,sel_ch])
+    filts = filts[...,sel_ch]
     dot_results = img_stack * filts # [batch, h, w, final_K**2 , input_c]
     dot_sel = dot_results[..., sel_ch] # [batch, h, w, final_K**2, 1]
     dot_ref = dot_results[..., ref_ch] # [batch, h ,w, final_k **2 ,[ref_ch]]
-    dot_sel = np.squeeze(dot_sel)
     dot_sel_sum = np.mean(np.abs(dot_sel), axis = -1)
     dot_ref_sum = np.mean(np.mean(np.abs(dot_ref), axis = -1), axis = -1) + 0.00001
     batch_confidence = dot_sel_sum / dot_ref_sum # [batch , h, w]
