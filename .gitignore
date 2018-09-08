@@ -28,3 +28,4 @@ tmp*
 log*/
 *.mat
 save_*/
+*.npy

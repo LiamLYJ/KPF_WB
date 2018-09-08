@@ -4,6 +4,160 @@ import operator
 import math
 from scipy import optimize
 from scipy.stats import gmean
+from skimage.util import random_noise
+from skimage import transform
+import random
+from skimage.io import imread
+
+def data_loader_np(data_folder, data_txt, start_index, batch_size, use_ms = False):
+    file_names, labels = read_label_file(data_txt, start_index, batch_size)
+    def _read(filename):
+        return imread(filename)
+    imgs = list(map(_read, [os.path.join(data_folder, item) for item in file_names]))
+    imgs_gt = [apply_gain(img_item, label_item) for img_item, label_item in zip(imgs,labels)]
+    if not use_ms:
+        imgs = np.stack(imgs, axis = 0)
+        imgs_gt = np.stack(imgs_gt, axis = 0)
+        return imgs, imgs_gt, labels, file_names
+    else:
+        imgs_concat = []
+        labels_couple = []
+        file_names_couple = []
+        configs = []
+        for _ in range(batch_size):
+            img1_index, img2_index = np.random.randint(0, batch_size), np.random.randint(0, batch_size)
+            coin = np.random.randint(0,2)
+            split = np.random.uniform(0.2,0.8)
+            offset_1 = np.random.uniform(0, 1-split)
+            offset_2 = np.random.uniform(0, split)
+            config = {'coin':coin, 'split':split, 'offset_1': offset_1, 'offset_2':offset_2}
+            configs.append(config)
+            img1 = imgs[img1_index]
+            img2 = imgs[img2_index]
+            img1_gt = imgs_gt[img1_index]
+            img2_gt = imgs_gt[img2_index]
+            imgs_concat.append(get_concat(img1, img2, config))
+            imgs_concat_gt.append(get_concat(img1_gt, img2_gt, config))
+            labels_couple.append((labels[img1_index], labels[img2_index]))
+            files_names_couple.append((file_names[img1_index],file_names[img2_index]))
+        imgs_concat = np.stack(imgs_concat, axis = 0)
+        imgs_concat_gt = np.stack(imgs_concat_gt, axis = 0)
+        return imgs_concat, imgs_concat_gt, labels_couple, file_names_couple, configs
+
+def apply_gain(img, label):
+    h,w,c = img.shape
+    img_after = np.clip(np.reshape(img,[-1, c]) * np.reshape(label,[-1, c]), 0.0, 255.0)
+    img_after = np.reshape(img_after, [h,w,c])
+    return img_after
+
+def get_concat(img1, img2, config):
+    # 1: left,top, 2:right down
+    coin = config['coin']
+    split = config['split']
+    offset_1 = config['offset_1']
+    offset_2 = config['offset_2']
+    h, w, _ = img1.shape
+    if coin == 0:
+        # concat left right '
+        left_start = w * offset_1
+        left_end = left_start + split * w
+        right_start = w * offset_2
+        right_end = right_start + w  - split * w
+        img1 = img1[:, left_start:left_end, :]
+        img2 = img2[right_start:right_end, :]
+        img = np.concatenate([img1, img2], axis = 1)
+    else:
+        # concat top down
+        top_start = h * offset_1
+        top_end = top_start + split * h
+        down_start = h * offset_2
+        down_end = down_start + h  - split * h
+        img1 = img1[top_start: top_end, :, :]
+        img2 = img2[down_start: down_end, :, :]
+        img = np.concatenate([img1, img2], axis = 0)
+    return img
+
+
+def batch_stable_process(img_batch, use_crop, use_clip, use_flip, use_rotate, use_noise):
+    b,h,w,_ = img_batch.shape
+    img_batch_after = []
+    for index in range(b):
+        img = img_batch[index,...]
+        if use_crop:
+            img = random_crop(img)
+        if use_clip:
+            img = random_clip(img)
+        if use_flip:
+            img =  random_flip(img)
+        if use_rotate:
+            img = random_rotate(img)
+        if use_noise:
+            img = random_add_noise(img)
+        img_batch_after.append(img)
+    img_batch_after = np.stack(img_batch_after, axis = 0)
+    return img_batch_after
+
+def random_crop(img, size = None):
+    h,w, _ = img.shape
+    if size is None:
+        size = np.random.uniform(0.6, 1) * h
+    start_y = np.random.randint(0, h-size)
+    start_x = np.random.randint(0, w-size)
+    img_tmp = img[start_y: size+ start_y, start_x: start_x + size]
+    return transform.resize(img_tmp, (h,w))
+
+def random_clip(img, rate = None):
+    if rate is None:
+        rate = np.random.uniform(0,0.2)
+    img_max = img.max()
+    img_min = img.min()
+    img = np.clip(img, img_min * (1+rate), img_max * (1 - rate))
+    return img
+
+def random_flip(img, flag = None):
+    if flag is None:
+        flag = np.random.randint(0,2)
+    if flag > 0:
+        img = img[:, ::-1]
+    return img
+
+def random_rotate(img, angle = None):
+    if angle is None:
+        angle = np.random.randint(10,60)
+    h,w,_ = img.shape
+    img = transform.rotate(img, angle)
+    return img
+
+def random_add_noise(img, var = None):
+    # in skiiamge_utils
+    if var is None:
+        var = 0.02
+    mean = 0.0
+    gau_img = random_noise(img, mean = mean, var = var) # defalu mode is gaussian
+    pos_img = random_noise(gau_img, mode = 'poisson')
+    return pos_img
+
+def encode_label(label):
+    r_gain,g_gain,b_gain = [float(item) for item in label.split(',')]
+    return [r_gain, g_gain, b_gain]
+
+def read_label_file(file, start_index = None, batch_size = None):
+    f = open(file, "r")
+    filepaths = []
+    labels = []
+    tog = True
+    for line in f:
+        if tog:
+            # -1 for earse '\n'
+            filepaths.append(line[:-1])
+            tog = not tog
+        else:
+            labels.append(encode_label(line))
+            tog = not tog
+    if start_index is not None and batch_size is not None:
+        return filepaths, labels
+    else:
+        return filepaths[start_index:batch_size], labels[start_index:batch_size]
 
 def get_concat(input,gt,est):
     concat = np.concatenate([input, gt, est], axis = 2) / 255.0

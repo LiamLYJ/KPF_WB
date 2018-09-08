@@ -10,27 +10,7 @@ from scipy.misc import imsave
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import dtypes
 from tf_utils import *
-
-def encode_label(label):
-    r_gain,g_gain,b_gain = [float(item) for item in label.split(',')]
-    return [r_gain, g_gain, b_gain]
-
-
-def read_label_file(file):
-    f = open(file, "r")
-    filepaths = []
-    labels = []
-    tog = True
-    for line in f:
-        if tog:
-            # -1 for earse '\n'
-            filepaths.append(line[:-1])
-            tog = not tog
-        else:
-            labels.append(encode_label(line))
-            tog = not tog
-    return filepaths, labels
-
+from utils import *
 
 
 def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False,
