@@ -8,6 +8,7 @@ from skimage.util import random_noise
 from skimage import transform
 import random
 from skimage.io import imread
+from scipy.spatial.distance import pdist, squareform
 
 def data_loader_np(data_folder, data_txt, start_index, batch_size, use_ms = False):
     file_names, labels = read_label_file(data_txt, start_index, batch_size)
@@ -188,7 +189,7 @@ def np_convolve(input, filts, final_K, final_W, spatial=True):
     return np.sum(A * x, axis=-2)
 
 
-def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch):
+def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch, is_spatial = False):
     img_sh = img.shape
     input_ch = img_sh[-1]
     h,w = img_sh[1], img_sh[2]
@@ -208,7 +209,8 @@ def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch):
     dot_sel_sum = np.mean(np.abs(dot_sel), axis = -1)
     dot_ref_sum = np.mean(np.mean(np.abs(dot_ref), axis = -1), axis = -1) + 0.00001
     batch_confidence = dot_sel_sum / dot_ref_sum # [batch , h, w]
-    batch_confidence = np.mean(np.mean(batch_confidence, axis = -1), axis = -1) # [batch,1]
+    if is_spatial:
+        batch_confidence = np.mean(np.mean(batch_confidence, axis = -1), axis = -1) # [batch,1]
 
     return batch_confidence
 
@@ -314,6 +316,26 @@ def solve_gain(img, img_ref):
     # gain = optimize.fmin(f, gain_mean, args= (img, img_ref))
     gain = optimize.fmin(f, [1.0,1.0,1.0], args= (img, img_ref))
     return gain
+
+
+def filter_img(input_img, ref_img, filter_value = 255.0):
+    h,w,c = ref_img.shape
+    img = np.mean(ref_img, axis = -1)
+    valid_points = np.where(img < filter_value)
+    valid_points = np.stack([valid_points[0],valid_points[1]], axis=-1)
+    non_valid_x, non_valid_y = np.where(img == filter_value)
+    how_many = len(non_valid_x)
+    for non_valid_point in zip(non_valid_x, non_valid_y):
+        non_valid_point = np.expand_dims(np.array(non_valid_point), axis =0) # 1x2
+        tmp = np.concatenate([non_valid_point, valid_points]) # (all_num+1)*2
+        dist_all = squareform(pdist(tmp))[0] # conpute a matrix norm, and only use one line
+        min_dist = sorted(dist_all)[1] # 1 for consider the non_valid_point
+        adjust_index = np.where(dist_all == min_dist)[0][0] - 1
+        adjust_x = adjust_index // h
+        adjust_y = adjust_index % h
+        input_img[non_valid_point[0][0], non_valid_point[0][1],:] = input_img[adjust_x, adjust_y, :]
+        ref_img[non_valid_point[0][0], non_valid_point[0][1],:] = ref_img[adjust_x, adjust_y, :]
+    return input_img, ref_img
 
 
 if __name__ == '__main__':
