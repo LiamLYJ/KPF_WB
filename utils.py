@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import operator
 import math
@@ -9,6 +10,10 @@ from skimage import transform
 import random
 from skimage.io import imread
 from scipy.spatial.distance import pdist, squareform
+from sklearn.cluster import SpectralClustering, KMeans, AgglomerativeClustering
+import matplotlib.pyplot as plt
+
+
 
 def data_loader_np(data_folder, data_txt, start_index, batch_size, use_ms = False):
     file_names, labels = read_label_file(data_txt, start_index, batch_size)
@@ -318,19 +323,25 @@ def solve_gain(img, img_ref):
     return gain
 
 
-def filter_img(input_img, ref_img, filter_value = 255.0):
+def filter_img(input_img, ref_img, filter_value = [0, 255]):
+    input_img = input_img.copy()
+    ref_img = ref_img.copy()
+
     h,w,c = ref_img.shape
     img = np.mean(ref_img, axis = -1)
-    valid_points = np.where(img < filter_value)
+    valid_matrix = np.logical_and(img > filter_value[0], img < filter_value[1])
+    valid_points = np.where(valid_matrix)
     valid_points = np.stack([valid_points[0],valid_points[1]], axis=-1)
-    non_valid_x, non_valid_y = np.where(img == filter_value)
+    non_valid_x, non_valid_y = np.where(np.logical_not(valid_matrix))
     how_many = len(non_valid_x)
     for non_valid_point in zip(non_valid_x, non_valid_y):
+        print ('how many remian:', how_many)
+        how_many -= 1
         non_valid_point = np.expand_dims(np.array(non_valid_point), axis =0) # 1x2
         tmp = np.concatenate([non_valid_point, valid_points]) # (all_num+1)*2
         dist_all = squareform(pdist(tmp))[0] # conpute a matrix norm, and only use one line
         min_dist = sorted(dist_all)[1] # 1 for consider the non_valid_point
-        adjust_index = np.where(dist_all == min_dist)[0][0] - 1
+        adjust_index = np.where(dist_all == min_dist)[0][0]
         adjust_x = adjust_index // h
         adjust_y = adjust_index % h
         input_img[non_valid_point[0][0], non_valid_point[0][1],:] = input_img[adjust_x, adjust_y, :]
@@ -338,15 +349,82 @@ def filter_img(input_img, ref_img, filter_value = 255.0):
     return input_img, ref_img
 
 
+def gain_fitting(img_input, img_ref, is_local = True, n_clusters = 3, with_clus = False):
+    if is_local:
+        self_eps = 1e-5
+        gain_map = (img_ref+self_eps) / (img_input+self_eps)
+        width = gain_map.shape[0]
+        height = gain_map.shape[1]
+
+        gain_map.resize((width*height, gain_map.shape[2]))
+        print("gain map min: ", np.amin(gain_map), " max: ", np.amax(gain_map))
+
+        print ('start clustering')
+        start_time = time.time()
+        # db = SpectralClustering(n_clusters=3).fit(gain_map)
+        # db = SpectralClustering(n_clusters=3, n_init = 3, n_jobs = -1).fit(gain_map)
+        db = SpectralClustering(n_clusters = n_clusters, n_jobs = -1).fit(gain_map)
+        # db = KMeans(n_clusters=3).fit(gain_map)
+        # db = AgglomerativeClustering(n_clusters=3).fit(gain_map)
+        elapsed_time = time.time() - start_time
+        print ('elapsed_time: ', elapsed_time)
+        print ('finish clustering')
+        labels = db.labels_
+
+        # Compute gain iteratively for each cluster
+        unique_labels = set(labels)
+        colors = [plt.cm.Spectral(each)
+                for each in np.linspace(0, 1, len(unique_labels))]
+        clus_img = np.zeros((gain_map.shape[0],4), np.float32)
+        gain_box = np.zeros((gain_map.shape[0],3), np.float32)
+        all_idx_ = np.arange(len(gain_map))
+        for k, col in zip(unique_labels, colors):
+            class_member_mask = (labels == k)
+            clus_img[class_member_mask] = col
+            print('Cluster ', k, ':')
+            mask_k = np.reshape(class_member_mask, (width, height))
+            print('Num of pixel contains: ', np.sum(mask_k))
+            optim_gain_k = solve_gain(img_input[mask_k], img_ref[mask_k])
+            # print('loss: ', errPerCluster(optim_gain_k, img0[mask_k], img2[mask_k]))
+            optim_gain_k = np.reshape(optim_gain_k,-1)
+            gain_box[class_member_mask] = optim_gain_k
+        if with_clus:
+            return gain_box, clus_img
+        else:
+            return gain_box
+    else:
+        gain = solve_gain(img_input, img_ref)
+        return gain
+
+
 if __name__ == '__main__':
+    # pass
+    ##############################
+    # test for gain fit
+    ##############################
+    img1 = np.ones([10,10,3])
+    # img1[0,0,:] = np.array([255,255,255])
+    img2 = img1.copy()
+    # tmp1, tmp2 = filter_img(img1, img2)
+    # print (img1)
+    # print (np.sum(tmp1 == img1))
+    # print (np.sum(tmp2 == img2))
+    gain_box = gain_fitting(img1, img2)
+    print(gain_box)
+
+
+
+    ###############################
+    # test for compute confidence
+    ###############################
     # filts = np.random.randn(5,5,3)
     # filts = np.arange(18).reshape(3,3,2)
     # final_val = compute_confidence(filts)
     # print (final_val)
 
-    # filts = np.arange(2*5*5*3*3*3*3).reshape(2,5,5,3*3*3,3)
-    filts = np.ones([2,5,5,3*3*3,3])
-    # img = np.arange(2*5*5*3).reshape(2,5,5,3)
-    img = np.ones([2,5,5,3])
-    val = compute_rate_confidence(filts,img,3,3,0,1)
-    print (val)
+    # # filts = np.arange(2*5*5*3*3*3*3).reshape(2,5,5,3*3*3,3)
+    # filts = np.ones([2,5,5,3*3*3,3])
+    # # img = np.arange(2*5*5*3).reshape(2,5,5,3)
+    # img = np.ones([2,5,5,3])
+    # val = compute_rate_confidence(filts,img,3,3,0,1)
+    # print (val)

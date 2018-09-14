@@ -9,7 +9,7 @@ from utils import *
 from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
 import glob
-
+import time
 
 
 # est_img = np.load(data_root+'000_00.npy')
@@ -17,6 +17,7 @@ import glob
 # plt.imshow(np.clip(est_img, 0, 255))
 # plt.show()
 
+# file_name = './000_10.png'
 file_name = './000_01.png'
 concat_img = cv2.imread(file_name)
 h,w,c = concat_img.shape
@@ -25,7 +26,7 @@ final_concat = np.zeros((h,w+w_cut,c), dtype=np.uint8)
 final_concat[:,:4*w_cut,:] = concat_img
 img0 = concat_img[:,0:w_cut,:].astype(np.float64)
 img2 = concat_img[:,2*w_cut:3*w_cut,:].astype(np.float64)
-img0, img2 = filter_img(img0, img2)
+# img0, img2 = filter_img(img0, img2)
 
 # def f(x,img_src,img_target):
 #     x = np.reshape(x,-1)
@@ -44,7 +45,7 @@ img0, img2 = filter_img(img0, img2)
 ##################################
 # Clustering for blocks WB
 ##################################
-from sklearn.cluster import DBSCAN, SpectralClustering
+from sklearn.cluster import SpectralClustering, KMeans, AgglomerativeClustering
 self_eps = 1e-5
 
 gain_map = (img2+self_eps) / (img0+self_eps)
@@ -55,19 +56,17 @@ gain_map.resize((width*height, gain_map.shape[2]))
 # gain_map = gain_map/np.linalg.norm(gain_map)
 print("gain map min: ", np.amin(gain_map), " max: ", np.amax(gain_map))
 
-# db = DBSCAN(eps=0.10, min_samples=10*10).fit(gain_map)
-# def unitDist(A, B):
-#     return np.mean(np.square(A-B))
-# db = DBSCAN(eps=0.0001, metric="cosine", min_samples=10*10).fit(gain_map)
-db = DBSCAN(eps=0.1, metric='euclidean', min_samples=10*10).fit(gain_map)
+print ('start clustering')
+start_time = time.time()
 # db = SpectralClustering(n_clusters=3).fit(gain_map)
-# core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-# core_samples_mask[db.core_sample_indices_] = True
+# db = SpectralClustering(n_clusters=3, n_init = 3, n_jobs = -1).fit(gain_map)
+# db = SpectralClustering(n_clusters=3, n_jobs = -1).fit(gain_map)
+db = KMeans(n_clusters=3).fit(gain_map)
+# db = AgglomerativeClustering(n_clusters=3).fit(gain_map)
+elapsed_time = time.time() - start_time
+print ('elapsed_time: ', elapsed_time)
+print ('finish clustering')
 labels = db.labels_
-# Number of clusters in labels, ignoring noise if present.
-n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-
-print('Estimated number of clusters: %d' % n_clusters_)
 
 ############################################
 # Compute gain iteratively for each cluster
@@ -83,31 +82,12 @@ def errPerCluster(gain_old, pixs_src, pixs_target):
     return loss
 
 final_image = np.zeros((gain_map.shape[0],4), np.float32)
+final_box = np.zeros((gain_map.shape[0],3), np.float32)
 all_idx_ = np.arange(len(gain_map))
 for k, col in zip(unique_labels, colors):
-    if k==-1:
-        col = [0,0,0,1]
-    #     continue
-    # if k==0:
-    #     class_member_mask = (labels == k)
-    #     tmp_mask = (labels == -1)
-    #     class_member_mask = class_member_mask | tmp_mask
-    # else:
     class_member_mask = (labels == k)
 
-    # idx_core_k_bool = class_member_mask & core_samples_mask
-    # idx_out_k_bool = class_member_mask & ~core_samples_mask
-    #
-    # idx_core_k = all_idx_[idx_core_k_bool]
-    # idx_out_k = all_idx_[idx_out_k_bool]
-    #
-    # for i in idx_core_k:
-    #     final_image[i] = col
-    #
-    # for i in idx_out_k:
-    #     final_image[i] = col
-    for i in class_member_mask:
-        final_image[i] = col
+    final_image[class_member_mask] = col
 
     print('Cluster ', k, ':')
     mask_k = np.reshape(class_member_mask, (width, height))
@@ -115,14 +95,15 @@ for k, col in zip(unique_labels, colors):
     optim_gain_k = optimize.fmin(errPerCluster, [1.0, 1.0, 1.0], args=(img0[mask_k], img2[mask_k]))
     # print('loss: ', errPerCluster(optim_gain_k, img0[mask_k], img2[mask_k]))
     optim_gain_k = np.reshape(optim_gain_k,-1)
+    final_box[class_member_mask] = optim_gain_k
     img0[mask_k] *= optim_gain_k[::-1]
 
 img_result_local = np.clip(img0, 0, 255)
-cv2.imwrite('local1.png', img_result_local.astype(np.uint8))
+cv2.imwrite('spectral.png', img_result_local.astype(np.uint8))
 
-# final_concat[:,4*w_cut:,:] = img_result_local.astype(np.uint8)
-# cv2.imwrite(result_root+img_id+'_estimateLocally.png', final_concat)
-
+final_concat[:,4*w_cut:,:] = img_result_local.astype(np.uint8)
+cv2.imwrite('final_concat.png', final_concat)
+#
 final_image.resize((width, height, 4))
-final_image*=255
-cv2.imwrite('DBSCAN.png', final_image.astype(np.uint8))
+final_image*=255.0
+cv2.imwrite('clustering.png', final_image.astype(np.uint8))
