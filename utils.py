@@ -15,10 +15,12 @@ import matplotlib.pyplot as plt
 
 
 
-def data_loader_np(data_folder, data_txt, start_index, batch_size, use_ms = False):
+def data_loader_np(data_folder, data_txt, patch_size, start_index, batch_size, use_ms = False):
     file_names, labels = read_label_file(data_txt, start_index, batch_size)
     def _read(filename):
-        return imread(filename)
+        _img = imread(filename)
+        _img = transform.resize(_img, (patch_size, patch_size))
+        return _img
     imgs = list(map(_read, [os.path.join(data_folder, item) for item in file_names]))
     imgs_gt = [apply_gain(img_item, label_item) for img_item, label_item in zip(imgs,labels)]
     if not use_ms:
@@ -27,8 +29,9 @@ def data_loader_np(data_folder, data_txt, start_index, batch_size, use_ms = Fals
         return imgs, imgs_gt, labels, file_names
     else:
         imgs_concat = []
+        imgs_concat_gt = []
         labels_couple = []
-        file_names_couple = []
+        files_names_couple = []
         configs = []
         for _ in range(batch_size):
             img1_index, img2_index = np.random.randint(0, batch_size), np.random.randint(0, batch_size)
@@ -42,13 +45,15 @@ def data_loader_np(data_folder, data_txt, start_index, batch_size, use_ms = Fals
             img2 = imgs[img2_index]
             img1_gt = imgs_gt[img1_index]
             img2_gt = imgs_gt[img2_index]
-            imgs_concat.append(get_concat(img1, img2, config))
-            imgs_concat_gt.append(get_concat(img1_gt, img2_gt, config))
+            img_concat_tmp, config = get_concat_config(img1, img2, config)
+            imgs_concat.append(img_concat_tmp)
+            img_concat_tmp, _ = get_concat_config(img1_gt, img2_gt, config)
+            imgs_concat_gt.append(img_concat_tmp)
             labels_couple.append((labels[img1_index], labels[img2_index]))
             files_names_couple.append((file_names[img1_index],file_names[img2_index]))
         imgs_concat = np.stack(imgs_concat, axis = 0)
         imgs_concat_gt = np.stack(imgs_concat_gt, axis = 0)
-        return imgs_concat, imgs_concat_gt, labels_couple, file_names_couple, configs
+        return imgs_concat, imgs_concat_gt, labels_couple, files_names_couple, configs
 
 def apply_gain(img, label):
     h,w,c = img.shape
@@ -56,32 +61,38 @@ def apply_gain(img, label):
     img_after = np.reshape(img_after, [h,w,c])
     return img_after
 
-def get_concat(img1, img2, config):
+def get_concat_config(img1, img2, config):
     # 1: left,top, 2:right down
     coin = config['coin']
     split = config['split']
     offset_1 = config['offset_1']
     offset_2 = config['offset_2']
     h, w, _ = img1.shape
+    config['height']= h
+    config['width'] = w
     if coin == 0:
         # concat left right '
-        left_start = w * offset_1
-        left_end = left_start + split * w
-        right_start = w * offset_2
-        right_end = right_start + w  - split * w
+        left_start = int(w * offset_1)
+        left_end = int(left_start + split * w)
+        right_start = int(w * offset_2)
+        right_end = int(right_start + w  - split * w)
         img1 = img1[:, left_start:left_end, :]
-        img2 = img2[right_start:right_end, :]
+        img2 = img2[:, right_start:(right_end+1), :]
+        config['left'] = '%d_%d'%(left_start, left_end)
+        config['right'] = '%d_%d'%(right_start, right_end + 1)
         img = np.concatenate([img1, img2], axis = 1)
     else:
         # concat top down
-        top_start = h * offset_1
-        top_end = top_start + split * h
-        down_start = h * offset_2
-        down_end = down_start + h  - split * h
+        top_start = int(h * offset_1)
+        top_end = int(top_start + split * h)
+        down_start = int(h * offset_2)
+        down_end = int(down_start + h  - split * h)
         img1 = img1[top_start: top_end, :, :]
-        img2 = img2[down_start: down_end, :, :]
+        img2 = img2[down_start: (down_end+1), :, :]
+        config['top'] = '%d_%d'%(top_start, top_end)
+        config['down'] = '%d_%d'%(down_start, down_end+1)
         img = np.concatenate([img1, img2], axis = 0)
-    return img
+    return img, config
 
 
 def batch_stable_process(img_batch, use_crop, use_clip, use_flip, use_rotate, use_noise):
@@ -106,7 +117,7 @@ def batch_stable_process(img_batch, use_crop, use_clip, use_flip, use_rotate, us
 def random_crop(img, size = None):
     h,w, _ = img.shape
     if size is None:
-        size = np.random.uniform(0.6, 1) * h
+        size = int(np.random.uniform(0.6, 1) * h)
     start_y = np.random.randint(0, h-size)
     start_x = np.random.randint(0, w-size)
     img_tmp = img[start_y: size+ start_y, start_x: start_x + size]
@@ -137,7 +148,7 @@ def random_rotate(img, angle = None):
 def random_add_noise(img, var = None):
     # in skiiamge_utils
     if var is None:
-        var = 0.02
+        var = 0.005
     mean = 0.0
     gau_img = random_noise(img, mean = mean, var = var) # defalu mode is gaussian
     pos_img = random_noise(gau_img, mode = 'poisson')
@@ -160,10 +171,10 @@ def read_label_file(file, start_index = None, batch_size = None):
         else:
             labels.append(encode_label(line))
             tog = not tog
-    if start_index is not None and batch_size is not None:
+    if start_index is None and batch_size is None:
         return filepaths, labels
     else:
-        return filepaths[start_index:batch_size], labels[start_index:batch_size]
+        return filepaths[start_index:(start_index + batch_size)], labels[start_index:(start_index + batch_size)]
 
 def get_concat(input,gt,est):
     concat = np.concatenate([input, gt, est], axis = 2) / 255.0
@@ -214,7 +225,7 @@ def compute_rate_confidence(filts, img, final_K, final_W, sel_ch, ref_ch, is_spa
     dot_sel_sum = np.mean(np.abs(dot_sel), axis = -1)
     dot_ref_sum = np.mean(np.mean(np.abs(dot_ref), axis = -1), axis = -1) + 0.00001
     batch_confidence = dot_sel_sum / dot_ref_sum # [batch , h, w]
-    if is_spatial:
+    if not is_spatial:
         batch_confidence = np.mean(np.mean(batch_confidence, axis = -1), axis = -1) # [batch,1]
 
     return batch_confidence
@@ -399,19 +410,31 @@ def gain_fitting(img_input, img_ref, is_local = True, n_clusters = 3, with_clus 
 
 if __name__ == '__main__':
     # pass
+    #########################
+    # test for data_loader
+    #########################
+    dataset_dir = "./data/cube"
+    dataset_file_name = './data_txt_file/cube_val.txt'
+    imgs, imgs_gt, labels, file_names = data_loader_np(data_folder = dataset_dir,
+                            data_txt=dataset_file_name, start_index=10, batch_size=10,
+                            use_ms = False)
+    print (imgs.shape)
+    print (imgs_gt.shape)
+    print (labels)
+    print (file_names)
+
     ##############################
     # test for gain fit
     ##############################
-    img1 = np.ones([10,10,3])
-    # img1[0,0,:] = np.array([255,255,255])
-    img2 = img1.copy()
-    # tmp1, tmp2 = filter_img(img1, img2)
-    # print (img1)
-    # print (np.sum(tmp1 == img1))
-    # print (np.sum(tmp2 == img2))
-    gain_box = gain_fitting(img1, img2)
-    print(gain_box)
-
+    # img1 = np.ones([10,10,3])
+    # # img1[0,0,:] = np.array([255,255,255])
+    # img2 = img1.copy()
+    # # tmp1, tmp2 = filter_img(img1, img2)
+    # # print (img1)
+    # # print (np.sum(tmp1 == img1))
+    # # print (np.sum(tmp2 == img2))
+    # gain_box = gain_fitting(img1, img2)
+    # print(gain_box)
 
 
     ###############################

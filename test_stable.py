@@ -13,21 +13,21 @@ from tf_utils import *
 import utils
 import data_provider
 
-flags.DEFINE_integer('batch_size', 20, 'The number of images in each batch.')
+flags.DEFINE_integer('batch_size', 10, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
-    'patch_size', 128, 'The height/width of images in each batch.')
+    'patch_size', 64, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('ckpt_path', './logs_nus/',
+flags.DEFINE_string('ckpt_path', './logs_1x1_64_N2/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', './data/nus', '')
-flags.DEFINE_string('dataset_file_name', './data_txt_file/NUS_val.txt','')
-flags.DEFINE_integer('final_K', 5, 'size of filter')
+flags.DEFINE_string('save_dir', './tmp_save', 'Directoru to save test results')
+flags.DEFINE_string('dataset_dir', './data/sony', '')
+flags.DEFINE_string('dataset_file_name', './data_txt_file/file_train.txt','')
+flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_boolean('shuffle', False, 'if shuffle')
-flags.DEFINE_integer('total_test_num', 200, 'num of test file')
-flags.DEFINE_boolean('use_ms', False, 'if use multi_source trianing')
+flags.DEFINE_integer('total_test_num', 50, 'num of test file')
+flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
 flags.DEFINE_boolean('use_crop', False, 'if check crop')
 flags.DEFINE_boolean('use_clip', False, 'if check clip')
 flags.DEFINE_boolean('use_flip', False, 'if check flip')
@@ -43,7 +43,7 @@ def test(FLAGS):
     final_K = FLAGS.final_K
     dataset_dir = os.path.join(FLAGS.dataset_dir)
     dataset_file_name = FLAGS.dataset_file_name
-    shuffle = FLAGAS.shuffle
+    shuffle = FLAGS.shuffle
     input_image = tf.placeholder(tf.float32, shape = (None,height, width,3))
 
     with tf.variable_scope('generator'):
@@ -63,9 +63,6 @@ def test(FLAGS):
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
 
-        if FLAGS.write_sum:
-            writer = tf.summary.FileWriter(FLAGS.save_dir, sess.graph)
-
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
@@ -82,32 +79,32 @@ def test(FLAGS):
         for i_step in range(max_steps):
             if FLAGS.use_ms:
                 imgs, imgs_gt, labels, file_names, configs = utils.data_loader_np(data_folder = dataset_dir,
-                                        data_txt=dataset_file_name, start_index=i_step*batch_size, batch_size=batch_size,
+                                        data_txt=dataset_file_name, patch_size=FLAGS.patch_size, start_index=i_step*batch_size, batch_size=batch_size,
                                         use_ms = True)
             else:
-                imgs, imgs_gt, labels, labels, file_names = utils.data_loader_np(data_folder = dataset_dir,
-                                        data_txt=dataset_file_name, start_index=i_step*batch_size, batch_size=batch_size,
+                imgs, imgs_gt, labels, file_names = utils.data_loader_np(data_folder = dataset_dir,
+                                        data_txt=dataset_file_name, patch_size=FLAGS.patch_size, start_index=i_step*batch_size, batch_size=batch_size,
                                         use_ms = False)
             input_image_ = utils.batch_stable_process(imgs, use_crop=FLAGS.use_crop,
                     use_clip=FLAGS.use_clip, use_flip=FLAGS.use_flip, use_rotate=FLAGS.use_rotate, use_noise=FLAGS.use_noise)
             gt_image_ = imgs_gt
             predict_image_, filters_ = sess.run([predict_image, filters], feed_dict={input_image: input_image_})
-            batch_confidence_r = utils.compute_rate_confidence(filters_, input_image_, vinal_K, final_W, sel_ch = 0, ref_ch = [2])
+            batch_confidence_r = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 0, ref_ch = [2])
             batch_confidence_b = utils.compute_rate_confidence(filters_, input_image_, final_K, final_W, sel_ch = 2, ref_ch = [0])
 
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
-                est = utils.solve_gain(input_image_[batch_i], predict_image_[batch_i])
                 print ('confidence_r: ', batch_confidence_r[batch_i])
                 print ('confidence_b: ', batch_confidence_b[batch_i])
+                est = utils.solve_gain(input_image_[batch_i], predict_image_[batch_i])
 
                 if FLAGS.use_ms:
-                    save_file_name = '%s_%s.png'%(file_names[batch_i][0].decode('utf-8').split('/')[-1],
-                                                file_names[batch_i][1].decode('utf-8').split('/')[-1])
+                    save_file_name = '%s_%s.png'%(file_names[batch_i][0][:-4],
+                                                file_names[batch_i][1][:-4])
                 else:
-                    current_file_name = file_name_[batch_i][0].decode('utf-8').split('/')[-1]
+                    current_file_name = file_names[batch_i]
                     print (' {} saved once'.format(current_file_name))
-                    gt = label_[batch_i]
+                    gt = labels[batch_i]
                     error = utils.angular_error(est, gt)
                     print ('est is ; ', est)
                     print ('gt is ; ', gt)
@@ -120,11 +117,17 @@ def test(FLAGS):
                 if FLAGS.save_dir is not None:
                     imsave(os.path.join(FLAGS.save_dir, save_file_name), all_concat*255.0 )
                     if FLAGS.use_ms:
-                        file_name_json = save_file_name[:-3] + 'json'
+                        # print ('local gain fitting', save_file_name)
+                        # gain_box, clus_img = utils.gain_fitting(input_image_[batch_i], predict_image_[batch_i], with_clus = True)
+                        if FLAGS.patch_size == 64:
+                            cur_filt = filters_[batch_i]
+                            for filt_index in range(9):
+                                cur_ = cur_filt[..., filt_index]
+                                imsave(os.path.join(FLAGS.save_dir, 'filt_%d_%s'%(filt_index, save_file_name)), cur_)
+                        file_name_json = os.path.join(FLAGS.save_dir, save_file_name[:-3] + 'json')
                         save_dict = configs[batch_i]
-                        save_dict['file1'] = file_names[batch_i][0].decode('utf-8').split('/')[-1]
-                        save_dict['file2'] = file_names[batch_i][1].decode('utf-8').split('/')[-1]
-                        with open(file_names_json, 'w') as fp:
+                        save_dict['file1_2'] = file_names[batch_i]
+                        with open(file_name_json, 'w') as fp:
                             json.dump(save_dict, fp, ensure_ascii=False)
                 # np.save(os.path.join(FLAGS.save_dir,'%03d_%02d.npy'%(i_step,batch_i)), predict_image_[batch_i])
 
