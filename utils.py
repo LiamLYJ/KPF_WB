@@ -12,6 +12,7 @@ from skimage.io import imread
 from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import SpectralClustering, KMeans, AgglomerativeClustering
 import matplotlib.pyplot as plt
+import cv2
 
 
 
@@ -19,8 +20,9 @@ def data_loader_np(data_folder, data_txt, patch_size, start_index, batch_size, u
     file_names, labels = read_label_file(data_txt, start_index, batch_size)
     def _read(filename):
         _img = imread(filename)
-        _img = transform.resize(_img, (patch_size, patch_size))
+        _img = cv2.resize(_img, (patch_size, patch_size))
         return _img
+
     imgs = list(map(_read, [os.path.join(data_folder, item) for item in file_names]))
     imgs_gt = [apply_gain(img_item, label_item) for img_item, label_item in zip(imgs,labels)]
     if not use_ms:
@@ -60,6 +62,17 @@ def apply_gain(img, label):
     img_after = np.clip(np.reshape(img,[-1, c]) * np.reshape(label,[-1, c]), 0.0, 255.0)
     img_after = np.reshape(img_after, [h,w,c])
     return img_after
+
+def apply_gain_box(img, gain_box, h_scale, w_scale):
+    h,w,c = img.shape
+    h_count = h // h_scale
+    w_count = w //w_scale
+    assert (h_count == gain_box.shape[0] and w_count == gain_box.shape[1])
+    for j in range(h_count):
+        for i in range(h_count):
+            img[j*h_scale:(j+1)*h_scale, i*w_scale:(i+1)*w_scale,:] = \
+                apply_gain(img[j*h_scale:(j+1)*h_scale, i*w_scale:(i+1)*w_scale,:], gain_box[j,i,:])
+    return img
 
 def get_concat_config(img1, img2, config):
     # 1: left,top, 2:right down
@@ -121,7 +134,7 @@ def random_crop(img, size = None):
     start_y = np.random.randint(0, h-size)
     start_x = np.random.randint(0, w-size)
     img_tmp = img[start_y: size+ start_y, start_x: start_x + size]
-    return transform.resize(img_tmp, (h,w))
+    return cv2.resize(img_tmp, (h,w))
 
 def random_clip(img, rate = None):
     if rate is None:
@@ -318,7 +331,7 @@ def print_angular_errors(errors):
     return results
 
 
-def solve_gain(img, img_ref):
+def solve_gain(img, img_ref, is_single = False):
     def f(x,img0,img1):
         x = np.reshape(x,-1)
         img0 = np.clip(img0 * x, 0, 255)
@@ -330,7 +343,10 @@ def solve_gain(img, img_ref):
     img_ref = np.clip(img_ref, 0 , 255.0)
     # gain_mean = np.mean(np.mean(img_ref / img, axis = 0), axis= 0)
     # gain = optimize.fmin(f, gain_mean, args= (img, img_ref))
-    gain = optimize.fmin(f, [1.0,1.0,1.0], args= (img, img_ref))
+    if not is_single:
+        gain = optimize.fmin(f, [1.0,1.0,1.0], args= (img, img_ref))
+    else:
+        gain = optimize.fmin(f, [1.0], args = (img, img_ref))
     return gain
 
 
@@ -360,10 +376,12 @@ def filter_img(input_img, ref_img, filter_value = [0, 255]):
     return input_img, ref_img
 
 
-def gain_fitting(img_input, img_ref, is_local = True, n_clusters = 3, with_clus = False):
+def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_clusters = 3, gamma = 0.8, with_clus = False):
     if is_local:
         self_eps = 1e-5
         gain_map = (img_ref+self_eps) / (img_input+self_eps)
+        if is_pure:
+            return gain_map
         width = gain_map.shape[0]
         height = gain_map.shape[1]
 
@@ -372,9 +390,7 @@ def gain_fitting(img_input, img_ref, is_local = True, n_clusters = 3, with_clus 
 
         print ('start clustering')
         start_time = time.time()
-        # db = SpectralClustering(n_clusters=3).fit(gain_map)
-        # db = SpectralClustering(n_clusters=3, n_init = 3, n_jobs = -1).fit(gain_map)
-        db = SpectralClustering(n_clusters = n_clusters, n_jobs = -1).fit(gain_map)
+        db = SpectralClustering(n_clusters = n_clusters, n_jobs = -1, gamma = gamma).fit(gain_map)
         # db = KMeans(n_clusters=3).fit(gain_map)
         # db = AgglomerativeClustering(n_clusters=3).fit(gain_map)
         elapsed_time = time.time() - start_time
@@ -393,12 +409,14 @@ def gain_fitting(img_input, img_ref, is_local = True, n_clusters = 3, with_clus 
             class_member_mask = (labels == k)
             clus_img[class_member_mask] = col
             print('Cluster ', k, ':')
-            mask_k = np.reshape(class_member_mask, (width, height))
+            mask_k = np.reshape(class_member_mask, (height, width))
             print('Num of pixel contains: ', np.sum(mask_k))
             optim_gain_k = solve_gain(img_input[mask_k], img_ref[mask_k])
             # print('loss: ', errPerCluster(optim_gain_k, img0[mask_k], img2[mask_k]))
             optim_gain_k = np.reshape(optim_gain_k,-1)
             gain_box[class_member_mask] = optim_gain_k
+        gain_box = gain_box.reshape([height, width, 3])
+        clus_img = clus_img.reshape([height, width, -1])
         if with_clus:
             return gain_box, clus_img
         else:
@@ -408,16 +426,69 @@ def gain_fitting(img_input, img_ref, is_local = True, n_clusters = 3, with_clus 
         return gain
 
 
+def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_clus = False):
+    if is_local:
+        self_eps = 1e-5
+        gain_map = (img_ref+self_eps) / (img_input+self_eps)
+        width = gain_map.shape[0]
+        height = gain_map.shape[1]
+
+        gain_map.resize((width*height, gain_map.shape[2]))
+
+        start_time = time.time()
+        gain_box = []
+        clus_box = []
+        for i in range(2):
+            if i == 1:
+                i += 1
+            print ('start clustering', i)
+            db = SpectralClustering(n_clusters = n_clusters, n_jobs = -1).fit(np.expand_dims(gain_map[...,i],axis= -1))
+            # db = KMeans(n_clusters = n_clusters, n_jobs = -1).fit(np.expand_dims(gain_map[...,i],axis= -1))
+            elapsed_time = time.time() - start_time
+            print ('elapsed_time: ', elapsed_time)
+            print ('finish clustering', i)
+            labels = db.labels_
+
+            # Compute gain iteratively for each cluster
+            unique_labels = set(labels)
+            colors = [plt.cm.Spectral(each)
+                    for each in np.linspace(0, 1, len(unique_labels))]
+            clus_item = np.zeros((gain_map.shape[0],4), np.float32)
+            gain_item = np.zeros((gain_map.shape[0],1), np.float32)
+            for k, col in zip(unique_labels, colors):
+                class_member_mask = (labels == k)
+                clus_item[class_member_mask] = col
+                print('Cluster ', k, ':')
+                mask_k = np.reshape(class_member_mask, (height, width))
+                print('Num of pixel contains: ', np.sum(mask_k))
+                optim_gain_k = solve_gain(img_input[mask_k, i], img_ref[mask_k, i], is_single = True)
+                optim_gain_k = np.reshape(optim_gain_k,-1)
+                gain_item[class_member_mask] = optim_gain_k
+            clus_item = np.reshape(clus_item, (height, width, -1))
+            gain_item = np.reshape(gain_item, (height, width, -1))
+            clus_box.append(clus_item)
+            gain_box.append(gain_item)
+        green = np.ones_like(gain_box[0])
+        gain_box = np.concatenate([gain_box[0], green, gain_box[1]], axis = 2)
+        if with_clus:
+            return gain_box, clus_box
+        else:
+            return gain_box
+    else:
+        gain = solve_gain(img_input, img_ref)
+        return gain
+
 if __name__ == '__main__':
     # pass
     #########################
     # test for data_loader
     #########################
-    dataset_dir = "./data/cube"
-    dataset_file_name = './data_txt_file/cube_val.txt'
-    imgs, imgs_gt, labels, file_names = data_loader_np(data_folder = dataset_dir,
-                            data_txt=dataset_file_name, start_index=10, batch_size=10,
+    dataset_dir = "./data/sony"
+    dataset_file_name = './data_txt_file/file_train.txt'
+    imgs, imgs_gt, labels, file_names = data_loader_np(data_folder = dataset_dir, patch_size=128,
+                            data_txt=dataset_file_name, start_index=0, batch_size=10,
                             use_ms = False)
+    print (imgs[0])
     print (imgs.shape)
     print (imgs_gt.shape)
     print (labels)

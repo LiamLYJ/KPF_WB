@@ -14,7 +14,7 @@ from utils import *
 
 
 def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=64, channel = 3, shuffle = True, use_ms = False,
-                    with_only_gain = False, with_file_name_gain = False, aug_color =0.0, aug_color_offdiag = 0.0, is_16bit = False):
+                    with_only_gain = False, with_file_name_gain = False, aug_color =0.0, aug_color_offdiag = 0.0, is_16bit = False, is_train = True):
     file_names, labels = read_label_file(dataset_file_name)
     file_names = [os.path.join(dataset_dir, fp) for fp in file_names]
 
@@ -33,7 +33,10 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
     image, label = color_augment(image, label, aug_color, aug_color_offdiag)
     image =  tf.image.resize_images(image, [height, width])
 
-    image_after = tf.clip_by_value(tf.reshape(image,[-1, channel]) * tf.reshape(label,[-1, channel]), 0, 255)
+    image_after = tf.reshape(image,[-1, channel]) * tf.reshape(label,[-1, channel])
+    if not is_train:
+        image_after = tf.clip_by_value(image_after, 0, 255)
+
     image_after = tf.reshape(image_after, [height, width, channel])
 
     if use_ms:
@@ -48,7 +51,11 @@ def load_batch(dataset_dir, dataset_file_name, batch_size=32, height=64, width=6
 
         image_ms, label_ms = color_augment(image_ms, label_ms, aug_color, aug_color_offdiag)
         image_ms =  tf.image.resize_images(image_ms, [height, width])
-        image_after_ms = tf.clip_by_value(tf.reshape(image_ms,[-1, channel]) * tf.reshape(label_ms,[-1, channel]), 0, 255)
+
+        image_after_ms = tf.reshape(image_ms,[-1, channel]) * tf.reshape(label_ms,[-1, channel])
+        if not is_train:
+            image_after_ms = tf.clip_by_value(image_after_ms, 0, 255)
+
         image_after_ms = tf.reshape(image_after_ms, [height, width, channel])
 
         cut_range = tf.random_uniform([],0.1,0.9)
