@@ -13,7 +13,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import SpectralClustering, KMeans, AgglomerativeClustering
 import matplotlib.pyplot as plt
 import cv2
-
+import json
 
 
 def data_loader_np(data_folder, data_txt, patch_size, start_index, batch_size, use_ms = False):
@@ -64,6 +64,7 @@ def apply_gain(img, label):
     return img_after
 
 def apply_gain_box(img, gain_box, h_scale, w_scale):
+    img = img.copy()
     h,w,c = img.shape
     h_count = h // h_scale
     w_count = w //w_scale
@@ -425,7 +426,6 @@ def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_cluster
         gain = solve_gain(img_input, img_ref)
         return gain
 
-
 def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_clus = False):
     if is_local:
         self_eps = 1e-5
@@ -477,6 +477,61 @@ def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_c
     else:
         gain = solve_gain(img_input, img_ref)
         return gain
+
+def get_original(data_dir, json_file, original_size = 1024):
+    with open(json_file) as f:
+        data = json.load(f)
+    height_ref = data['height']
+    width_ref = data['width']
+    height_org = width_org = original_size
+
+    file_name_1 = data['file1_2'][0]
+    file_name_2 = data['file1_2'][1]
+
+    img_org_1 = imread(os.path.join(data_dir, file_name_1))
+    img_org_2 = imread(os.path.join(data_dir, file_name_2))
+
+    img_org_1 = cv2.resize(img_org_1, (height_org, width_org))
+    img_org_2 = cv2.resize(img_org_2, (height_org, width_org))
+
+    scale_h = height_org // height_ref
+    scale_w = width_org // width_ref
+
+    coin = data['coin']
+    if coin == 0:
+        left_start = int(data['left'].split('_')[0])
+        left_end = int(data['left'].split('_')[1])
+        right_start = int(data['right'].split('_')[0])
+        right_end = int(data['right'].split('_')[1])
+
+        left_start *= scale_w
+        right_start *= scale_w
+        left_end *= scale_w
+        right_end *= scale_w
+
+        concat_left = img_org_1[:, left_start:left_end,:]
+        concat_right = img_org_2[:, right_start:right_end,:]
+        concat = np.concatenate([concat_left, concat_right], axis = 1)
+
+    elif coin == 1:
+        top_start = int(data['top'].split('_')[0])
+        top_end = int(data['top'].split('_')[1])
+        down_start = int(data['down'].split('_')[0])
+        down_end = int(data['down'].split('_')[1])
+
+        top_start *= scale_h
+        top_end *= scale_h
+        down_start *= scale_h
+        down_end *= scale_h
+
+        concat_top = img_org_1[top_start:top_end, :, :]
+        concat_down = img_org_2[down_start:down_end, :, :]
+        concat = np.concatenate([concat_top, concat_down], axis = 0)
+
+    else:
+        raise ValueError('bad coin')
+
+    return concat, scale_h, scale_w
 
 if __name__ == '__main__':
     # pass

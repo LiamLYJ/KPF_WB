@@ -16,17 +16,21 @@ import data_provider
 flags.DEFINE_integer('batch_size', 10, 'The number of images in each batch.')
 
 flags.DEFINE_integer(
+    # 'patch_size', 128, 'The height/width of images in each batch.')
     'patch_size', 64, 'The height/width of images in each batch.')
 
+# flags.DEFINE_string('ckpt_path', './logs_sony_ex/',
+# flags.DEFINE_string('ckpt_path', './logs_with_filt_reg/',
 flags.DEFINE_string('ckpt_path', './logs_1x1_64_N2/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', './tmp_save', 'Directoru to save test results')
+flags.DEFINE_string('save_dir', './tmp_save_64', 'Directoru to save test results')
 flags.DEFINE_string('dataset_dir', './data/sony', '')
 flags.DEFINE_string('dataset_file_name', './data_txt_file/file_train.txt','')
+# flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_boolean('shuffle', False, 'if shuffle')
-flags.DEFINE_integer('total_test_num', 50, 'num of test file')
+flags.DEFINE_integer('total_test_num', 150, 'num of test file')
 flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
 flags.DEFINE_boolean('use_crop', False, 'if check crop')
 flags.DEFINE_boolean('use_clip', False, 'if check clip')
@@ -54,7 +58,7 @@ def test(FLAGS):
         filters = net.convolve_net(input_image, final_K, final_W, ch0=64,
                                    N=N_size, D=3,
                       scope='get_filted', separable=False, bonus=False)
-    predict_image = net.convolve(input_image, filters, final_K, final_W)
+    predict_image = convolve(input_image, filters, final_K, final_W)
 
     config = tf.ConfigProto()
     with tf.Session(config=config) as sess:
@@ -96,7 +100,7 @@ def test(FLAGS):
             for batch_i in range(batch_size):
                 print ('confidence_r: ', batch_confidence_r[batch_i])
                 print ('confidence_b: ', batch_confidence_b[batch_i])
-                est = utils.solve_gain(input_image_[batch_i], predict_image_[batch_i])
+                est = utils.solve_gain(input_image_[batch_i], np.clip(predict_image_[batch_i], 0, 500))
 
                 if FLAGS.use_ms:
                     save_file_name = '%s_%s.png'%(file_names[batch_i][0][:-4],
@@ -116,6 +120,9 @@ def test(FLAGS):
                 all_concat = np.concatenate([concat[batch_i], est_img_], axis = 1)
                 if FLAGS.save_dir is not None:
                     imsave(os.path.join(FLAGS.save_dir, save_file_name), all_concat*255.0 )
+                    np_concat = np.concatenate([input_image_[batch_i], predict_image_[batch_i]], axis = 0)
+                    file_name_np = os.path.join(FLAGS.save_dir, save_file_name[:-3] + 'npy')
+                    np.save(file_name_np, np_concat)
                     if FLAGS.use_ms:
                         # print ('local gain fitting', save_file_name)
                         # gain_box, clus_img = utils.gain_fitting(input_image_[batch_i], predict_image_[batch_i], with_clus = True)

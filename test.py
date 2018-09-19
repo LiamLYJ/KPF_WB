@@ -17,16 +17,16 @@ flags.DEFINE_integer('batch_size', 20, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('ckpt_path', './logs_nus/',
+flags.DEFINE_string('ckpt_path', './logs_sony_ex/',
                     'Directory where to write training.')
-# flags.DEFINE_string('save_dir', './save_dir_cube', 'Directoru to save test results')
 flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', './data/nus', '')
-flags.DEFINE_string('dataset_file_name', './data_txt_file/NUS_val.txt','')
+# flags.DEFINE_string('save_dir', './tmp', 'Directoru to save test results')
+flags.DEFINE_string('dataset_dir', './data/sony', '')
+flags.DEFINE_string('dataset_file_name', './data_txt_file/file_train.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 
-flags.DEFINE_integer('total_test_num', 200, 'num of test file')
+flags.DEFINE_integer('total_test_num', 100, 'num of test file')
 flags.DEFINE_boolean('write_sum', False, 'if write summay in test mode')
 flags.DEFINE_boolean('use_ms', False, 'if use multi_source trianing')
 FLAGS = flags.FLAGS
@@ -42,11 +42,11 @@ def test(FLAGS):
     if FLAGS.use_ms:
         input_image, gt_image = data_provider.load_batch(dataset_dir, dataset_file_name,
                                                          batch_size, height, width, channel = final_W,
-                                                         shuffle = False, use_ms = True,)
+                                                         shuffle = False, use_ms = True, is_train = False)
     else:
         input_image, gt_image, label, file_name = data_provider.load_batch(dataset_dir, dataset_file_name,
                                                      batch_size, height, width, channel = final_W,
-                                                     shuffle = False, use_ms = False, with_file_name_gain = True)
+                                                     shuffle = False, use_ms = False, with_file_name_gain = True, is_train = False)
 
     with tf.variable_scope('generator'):
         if FLAGS.patch_size == 128:
@@ -102,7 +102,7 @@ def test(FLAGS):
 
             concat = utils.get_concat(input_image_, gt_image_, predict_image_)
             for batch_i in range(batch_size):
-                est = utils.solve_gain(input_image_[batch_i], predict_image_[batch_i])
+                est = utils.solve_gain(input_image_[batch_i], np.clip(predict_image_[batch_i], 0, 500))
                 print ('confidence_r: ', batch_confidence_r[batch_i])
                 print ('confidence_b: ', batch_confidence_b[batch_i])
 
