@@ -39,7 +39,7 @@ if __name__ == '__main__':
     pure = utils.apply_gain_box(concat_original, gain_box_pure, scale_h, scale_w)
     imsave(fn+'_big_pure.png', pure)
 
-    gain_box, clus_img = utils.gain_fitting(img0, img2, is_local = True, n_clusters =2, gamma = 4.0, with_clus = True)
+    gain_box, clus_img, clus_labels = utils.gain_fitting(img0, img2, is_local = True, n_clusters =2, gamma = 4.0, with_clus = True)
     imsave(fn+'_clus.png', clus_img)
     big = utils.apply_gain_box(concat_original, gain_box, scale_h, scale_w)
     imsave(fn + '_big.png', big)

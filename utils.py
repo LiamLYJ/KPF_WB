@@ -42,7 +42,6 @@ def data_loader_np(data_folder, data_txt, patch_size, start_index, batch_size, u
             offset_1 = np.random.uniform(0, 1-split)
             offset_2 = np.random.uniform(0, split)
             config = {'coin':coin, 'split':split, 'offset_1': offset_1, 'offset_2':offset_2}
-            configs.append(config)
             img1 = imgs[img1_index]
             img2 = imgs[img2_index]
             img1_gt = imgs_gt[img1_index]
@@ -52,7 +51,10 @@ def data_loader_np(data_folder, data_txt, patch_size, start_index, batch_size, u
             img_concat_tmp, _ = get_concat_config(img1_gt, img2_gt, config)
             imgs_concat_gt.append(img_concat_tmp)
             labels_couple.append((labels[img1_index], labels[img2_index]))
-            files_names_couple.append((file_names[img1_index],file_names[img2_index]))
+            files_names_couple.append((file_names[img1_index], file_names[img2_index]))
+            config['file1_2'] = [file_names[img1_index], file_names[img2_index]]
+            config['label1_2'] = [labels[img1_index], labels[img2_index]]
+            configs.append(config)
         imgs_concat = np.stack(imgs_concat, axis = 0)
         imgs_concat_gt = np.stack(imgs_concat_gt, axis = 0)
         return imgs_concat, imgs_concat_gt, labels_couple, files_names_couple, configs
@@ -393,7 +395,6 @@ def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_cluster
         start_time = time.time()
         db = SpectralClustering(n_clusters = n_clusters, n_jobs = -1, gamma = gamma).fit(gain_map)
         # db = KMeans(n_clusters=3).fit(gain_map)
-        # db = AgglomerativeClustering(n_clusters=3).fit(gain_map)
         elapsed_time = time.time() - start_time
         print ('elapsed_time: ', elapsed_time)
         print ('finish clustering')
@@ -419,7 +420,7 @@ def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_cluster
         gain_box = gain_box.reshape([height, width, 3])
         clus_img = clus_img.reshape([height, width, -1])
         if with_clus:
-            return gain_box, clus_img
+            return gain_box, clus_img, labels
         else:
             return gain_box
     else:
@@ -471,7 +472,7 @@ def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_c
         green = np.ones_like(gain_box[0])
         gain_box = np.concatenate([gain_box[0], green, gain_box[1]], axis = 2)
         if with_clus:
-            return gain_box, clus_box
+            return gain_box, clus_box, labels
         else:
             return gain_box
     else:
@@ -532,6 +533,14 @@ def get_original(data_dir, json_file, original_size = 1024):
         raise ValueError('bad coin')
 
     return concat, scale_h, scale_w
+
+
+def get_confi_multi(clus_labels, confi, label):
+    # confi hxw
+    # clus_labels: h*w
+    mask = clus_labels == label
+    confi = np.reshape(confi, -1)
+    return np.mean(confi[mask])
 
 if __name__ == '__main__':
     # pass
