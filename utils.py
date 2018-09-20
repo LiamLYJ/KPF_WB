@@ -388,6 +388,7 @@ def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_cluster
         width = gain_map.shape[0]
         height = gain_map.shape[1]
 
+        gain_map = np.clip(gain_map, 0, 500)
         gain_map.resize((width*height, gain_map.shape[2]))
         print("gain map min: ", np.amin(gain_map), " max: ", np.amax(gain_map))
 
@@ -433,7 +434,7 @@ def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_c
         gain_map = (img_ref+self_eps) / (img_input+self_eps)
         width = gain_map.shape[0]
         height = gain_map.shape[1]
-
+        gain_map = np.clip(gain_map, 0, 500)
         gain_map.resize((width*height, gain_map.shape[2]))
 
         start_time = time.time()
