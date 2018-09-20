@@ -11,14 +11,21 @@ from scipy.misc import imsave
 
 if __name__ == '__main__':
 
+    # dir = './tmp_save_ex'
     # fn = '111MSDCF_DSC07730_108MSDCF_DSC07506'
     # fn = '108MSDCF_DSC07087_111MSDCF_DSC07977'
     # fn = '111MSDCF_DSC07750_109MSDCF_DSC06798'
     # fn = '112MSDCF_DSC08800_111MSDCF_DSC07916'
     # fn = '105MSDCF_DSC03577_112MSDCF_DSC09082'
-    fn = '106MSDCF_DSC04946_106MSDCF_DSC04946'
+    # fn = '106MSDCF_DSC04946_106MSDCF_DSC04946'
 
-    dir = './tmp_save_ex'
+
+    dir = './tmp_save_64'
+    # fn = '105MSDCF_DSC03577_111MSDCF_DSC07998'
+    # fn = '106MSDCF_DSC05012_108MSDCF_DSC07138'
+    # fn = '107MSDCF_DSC04083_109MSDCF_DSC06778'
+    fn = '107MSDCF_DSC04100_111MSDCF_DSC07918'
+
     file_np = os.path.join(dir, fn + '.npy')
     tmp = np.load(file_np)
 

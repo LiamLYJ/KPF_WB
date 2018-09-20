@@ -17,12 +17,12 @@ flags.DEFINE_integer('batch_size', 20, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('ckpt_path', './logs_sony_ex/',
+flags.DEFINE_string('ckpt_path', './logs_cube_ex/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', None, 'Directoru to save test results')
+flags.DEFINE_string('save_dir', 'dump_cube_train', 'Directoru to save test results')
 # flags.DEFINE_string('save_dir', './tmp', 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', './data/sony', '')
-flags.DEFINE_string('dataset_file_name', './data_txt_file/file_train.txt','')
+flags.DEFINE_string('dataset_dir', './data/cube', '')
+flags.DEFINE_string('dataset_file_name', './data_txt_file/cube_train.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 

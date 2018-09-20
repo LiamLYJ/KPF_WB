@@ -20,23 +20,24 @@ flags.DEFINE_integer(
     # 'patch_size', 64, 'The height/width of images in each batch.')
 
 flags.DEFINE_string('ckpt_path', './logs_sony_ex/',
-# flags.DEFINE_string('ckpt_path', './logs_1x1_64_N2/',
+# flags.DEFINE_string('ckpt_path', './logs_sony_ex_64/',
                     'Directory where to write training.')
-# flags.DEFINE_string('save_dir', './tmp_save_64', 'Directoru to save test results')
-flags.DEFINE_string('save_dir', './tmp_test', 'Directoru to save test results')
+flags.DEFINE_string('save_dir', './dump_sony_train_ms', 'Directoru to save test results')
+# flags.DEFINE_string('save_dir', './tmp_test', 'Directoru to save test results')
 flags.DEFINE_string('dataset_dir', './data/sony', '')
 flags.DEFINE_string('dataset_file_name', './data_txt_file/file_train.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 # flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_boolean('shuffle', False, 'if shuffle')
-flags.DEFINE_integer('total_test_num', 10, 'num of test file')
+flags.DEFINE_integer('total_test_num', 100, 'num of test file')
 flags.DEFINE_boolean('use_ms', True, 'if use multi_source trianing')
 flags.DEFINE_boolean('use_crop', False, 'if check crop')
 flags.DEFINE_boolean('use_clip', False, 'if check clip')
 flags.DEFINE_boolean('use_flip', False, 'if check flip')
 flags.DEFINE_boolean('use_rotate', False, 'if check rotate')
 flags.DEFINE_boolean('use_noise', False, 'if check noise')
+flags.DEFINE_boolean('save_clus', False, 'if save clus')
 FLAGS = flags.FLAGS
 
 
@@ -123,16 +124,16 @@ def test(FLAGS):
                     file_name_np = os.path.join(FLAGS.save_dir, save_file_name[:-3] + 'npy')
                     np.save(file_name_np, np_concat)
                     if FLAGS.use_ms:
-                        print ('local gain fitting', save_file_name)
-                        gain_box, clus_img, clus_labels = utils.gain_fitting(input_image_[batch_i], predict_image_[batch_i], is_local = True, n_clusters =2, gamma = 4.0, with_clus = True)
-                        num_multi = len(set(clus_labels))
-                        for index_ill in range(num_multi):
-                            confi_multi_r = utils.get_confi_multi(clus_labels, batch_confidence_r[batch_i], label = index_ill)
-                            confi_multi_b = utils.get_confi_multi(clus_labels, batch_confidence_b[batch_i], label = index_ill)
-                            print ('confidence_r for ill %d'%index_ill, confi_multi_r)
-                            print ('confidence_b for ill %d'%index_ill, confi_multi_b)
-
-                        imsave(os.path.join(FLAGS.save_dir, '%s_clus.png'%(save_file_name[:-4])), clus_img)
+                        if FLAGS.save_clus:
+                            print ('local gain fitting', save_file_name)
+                            gain_box, clus_img, clus_labels = utils.gain_fitting(input_image_[batch_i], predict_image_[batch_i], is_local = True, n_clusters =2, gamma = 4.0, with_clus = True)
+                            num_multi = len(set(clus_labels))
+                            for index_ill in range(num_multi):
+                                confi_multi_r = utils.get_confi_multi(clus_labels, batch_confidence_r[batch_i], label = index_ill)
+                                confi_multi_b = utils.get_confi_multi(clus_labels, batch_confidence_b[batch_i], label = index_ill)
+                                print ('confidence_r for ill %d'%index_ill, confi_multi_r)
+                                print ('confidence_b for ill %d'%index_ill, confi_multi_b)
+                            imsave(os.path.join(FLAGS.save_dir, '%s_clus.png'%(save_file_name[:-4])), clus_img)
 
                         cur_filt = filters_[batch_i]
                         for filt_index in range(num_filt):
