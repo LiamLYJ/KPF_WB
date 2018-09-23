@@ -110,17 +110,17 @@ def make_img(img_list, save_dir):
         # img16 = (np.clip(raw / raw.max(), 0, 1) * 65535.0).astype(np.uint16)
         img8 = (np.clip(raw / raw.max(), 0, 1) * 255.0).astype(np.uint8)
 
-        image = cv2.resize(img8, (512,512))
+        image = cv2.resize(img8, (1024,1024))
         save_name = os.path.join(save_dir,item_name.split('/')[-1])
         cv2.imwrite(save_name, image)
 
 
 if __name__ == '__main__':
-    data_path = '/Users/lyj/Documents/AWB_data/gehler_original'
+    data_path = '/Users/liuyongjie/Desktop/gogogo/gehler_original'
     img_list = glob(os.path.join(data_path, '*.png'))
     img_list = sorted(img_list)
 
-    mat = (scipy.io.loadmat('/Users/lyj/Documents/AWB_data/gehler_original/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
+    # mat = (scipy.io.loadmat('/Users/lyj/Documents/AWB_data/gehler_original/real_illum_568.mat', squeeze_me = True, struct_as_record = False))
     # make_txt_file(img_list, mat, '/Users/lyj/Desktop/gehler')
-    make_img(img_list, '/Users/lyj/Desktop/gehler_8')
+    make_img(img_list, '/Users/liuyongjie/Desktop/gogogo/gehler_1024')
     # check_gehler(img_list, mat)

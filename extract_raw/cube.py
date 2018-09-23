@@ -139,10 +139,10 @@ def make_img(img_list, save_dir):
         cv2.imwrite(save_name, image)
 
 if __name__ == '__main__':
-    data_path = '/Users/lyj/Documents/AWB_data/cube/cube_original'
-    file_gt = '/Users/lyj/cube/cube_gt.txt'
+    data_path = '/Users/liuyongjie/Desktop/gogogo/cube_original'
+    # file_gt = '/Users/lyj/cube/cube_gt.txt'
     img_list = glob(os.path.join(data_path, '*.png'))
     img_list = sort_nicely(img_list)
     # check_cube(data_path, file_gt)
     # make_txt_file(data_path, file_gt, save_dir = '/Users/lyj/Desktop/cube_')
-    make_img(img_list,'/Users/lyj/Desktop/cube')
+    make_img(img_list,'/Users/liuyongjie/Desktop/gogogo/cube_1024')

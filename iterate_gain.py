@@ -14,7 +14,7 @@ concat = cv2.imread('save_dir_new/000_00.png')
 h,w,c = concat.shape
 w_cut = w //4
 img0 = concat[:,0:w_cut,:]
-img2 = concat[:,2*w_cut:3*w_cut,:]e
+img2 = concat[:,2*w_cut:3*w_cut,:]
 raise
 
 def f(x,img0,img1):

@@ -480,7 +480,7 @@ def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_c
         gain = solve_gain(img_input, img_ref)
         return gain
 
-def get_original(data_dir, json_file, original_size = 1024):
+def get_original(data_dir, json_file, original_size = 1024, with_gt = False):
     with open(json_file) as f:
         data = json.load(f)
     height_ref = data['height']
@@ -514,6 +514,11 @@ def get_original(data_dir, json_file, original_size = 1024):
         concat_left = img_org_1[:, left_start:left_end,:]
         concat_right = img_org_2[:, right_start:right_end,:]
         concat = np.concatenate([concat_left, concat_right], axis = 1)
+        if with_gt:
+            label1_2 = data['label1_2']
+            concat_left_gt = apply_gain(concat_left, label1_2[0])
+            concat_right_gt = apply_gain(concat_right, label1_2[1])
+            concat_gt = np.concatenate([concat_left_gt, concat_right_gt], axis = 1)
 
     elif coin == 1:
         top_start = int(data['top'].split('_')[0])
@@ -529,12 +534,19 @@ def get_original(data_dir, json_file, original_size = 1024):
         concat_top = img_org_1[top_start:top_end, :, :]
         concat_down = img_org_2[down_start:down_end, :, :]
         concat = np.concatenate([concat_top, concat_down], axis = 0)
-
+        if with_gt:
+            label1_2 = data['label1_2']
+            concat_top_gt = apply_gain(concat_top, label1_2[0])
+            concat_down_gt = apply_gain(concat_down, label1_2[1])
+            concat_gt = np.concatenate([concat_top_gt, concat_down_gt], axis = 0)
+            
     else:
         raise ValueError('bad coin')
 
-    return concat, scale_h, scale_w
-
+    if with_gt:
+        return concat, concat_gt
+    else:
+        return concat, scale_h, scale_w
 
 def get_confi_multi(clus_labels, confi, label):
     # confi hxw
