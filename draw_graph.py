@@ -54,10 +54,10 @@ def vis_kernel():
                 vmin=0, vmax=1,
                 xticklabels= False,
                 yticklabels= False,
-                cmap = 'YlGnBu',
+                # cmap = 'YlGnBu',
                 cbar_ax=None if i else cbar_ax,
-                square = True)
-        ax.set_xlabel(f(i))
+                square = True,)
+        ax.set_xlabel(f(i), weight='bold', fontsize=18)
         ax.set(adjustable='box-forced', aspect='equal')
     plt.show()
 
@@ -137,6 +137,7 @@ def draw_multi(ori_dir, data_dir, fn):
 
 if __name__ == '__main__':
 
+
     ######### draw multi #######################
     # fn = ['100MSDCF_DSC09744_100MSDCF_DSC09775',  # big confi, small error
     #     '100MSDCF_DSC09998_100MSDCF_DSC09930', '103MSDCF_DSC00681_103MSDCF_DSC00831', # big confi, big error
@@ -170,22 +171,22 @@ if __name__ == '__main__':
     # data_dir = './dump_nus_train_ms'
 
 
-    fn = [
-        # '',  # big confi, small error
-        'IMG_0845_IMG_0378', # big confi, big error
-        'IMG_0284_IMG_0598',  # small confi,  small error
-        # 'IMG_0424_IMG_0870' # small confi, big error
-        ]
-    ori_dir = './data/gehler_1024'
-    data_dir = './dump_gehler_test_ms'
-    # data_dir = './dump_gehler_train_ms'
-    # fn = ['IMG_0480_IMG_0621']
-
-
-    for item in fn:
-        draw_multi(ori_dir, data_dir, item)
-
-    raise
+    # fn = [
+    #     # '',  # big confi, small error
+    #     'IMG_0845_IMG_0378', # big confi, big error
+    #     'IMG_0284_IMG_0598',  # small confi,  small error
+    #     # 'IMG_0424_IMG_0870' # small confi, big error
+    #     ]
+    # ori_dir = './data/gehler_1024'
+    # data_dir = './dump_gehler_test_ms'
+    # # data_dir = './dump_gehler_train_ms'
+    # # fn = ['IMG_0480_IMG_0621']
+    #
+    #
+    # for item in fn:
+    #     draw_multi(ori_dir, data_dir, item)
+    #
+    # raise
     ###############################################################
 
 
@@ -226,6 +227,10 @@ if __name__ == '__main__':
     #     draw_single(ori_dir, data_dir, item)
     # raise
     #############################################
+
+    # vis_kernel()
+    # raise
+
 
     img_tmp = imread(fn[:-4] + '_big.png')
     img_tmp = apply_gamma(img_tmp)
