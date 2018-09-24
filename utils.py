@@ -379,6 +379,28 @@ def filter_img(input_img, ref_img, filter_value = [0, 255]):
     return input_img, ref_img
 
 
+def gain_fitting_mask(img_input, img_ref, mask, gt_label):
+    num_ill = len(set(mask))
+    assert (num_ill == len(gt_label))
+    est_label = []
+    h,w,_ = img_input.shape
+    assert (len(mask) == h*w)
+    for index_ill in range(num_ill):
+        cur_mask = mask == index_ill
+        tmp0 = img_input.copy()
+        tmp1 = img_ref.copy()
+        tmp0[cur_mask.reshape(h,w)] = 0
+        tmp1[cur_mask.reshape(h,w)] = 0
+        est_label.append(solve_gain(tmp0, tmp1))
+    errors = []
+    for gt_item in gt_label:
+        tmp_error = 100
+        for est_item in est_label:
+            tmp_error = min(tmp_error, angular_error(gt_item, est_item))
+        errors.append(tmp_error)
+    return errors
+
+
 def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_clusters = 3, gamma = 0.8, with_clus = False):
     if is_local:
         self_eps = 1e-5
@@ -388,14 +410,14 @@ def gain_fitting(img_input, img_ref, is_pure = False, is_local = True, n_cluster
         width = gain_map.shape[0]
         height = gain_map.shape[1]
 
-        gain_map = np.clip(gain_map, 0, 500)
+        gain_map = np.clip(gain_map, 0, 3)
         gain_map.resize((width*height, gain_map.shape[2]))
         print("gain map min: ", np.amin(gain_map), " max: ", np.amax(gain_map))
 
         print ('start clustering')
         start_time = time.time()
         db = SpectralClustering(n_clusters = n_clusters, n_jobs = -1, gamma = gamma).fit(gain_map)
-        # db = KMeans(n_clusters=3).fit(gain_map)
+        # db = KMeans(n_clusters=n_clusters).fit(gain_map)
         elapsed_time = time.time() - start_time
         print ('elapsed_time: ', elapsed_time)
         print ('finish clustering')
@@ -434,7 +456,7 @@ def gain_fitting_sep(img_input, img_ref, is_local = True, n_clusters = 2, with_c
         gain_map = (img_ref+self_eps) / (img_input+self_eps)
         width = gain_map.shape[0]
         height = gain_map.shape[1]
-        gain_map = np.clip(gain_map, 0, 500)
+        gain_map = np.clip(gain_map, 0, 3)
         gain_map.resize((width*height, gain_map.shape[2]))
 
         start_time = time.time()
@@ -539,12 +561,12 @@ def get_original(data_dir, json_file, original_size = 1024, with_gt = False):
             concat_top_gt = apply_gain(concat_top, label1_2[0])
             concat_down_gt = apply_gain(concat_down, label1_2[1])
             concat_gt = np.concatenate([concat_top_gt, concat_down_gt], axis = 0)
-            
+
     else:
         raise ValueError('bad coin')
 
     if with_gt:
-        return concat, concat_gt
+        return concat, concat_gt, scale_h, scale_w
     else:
         return concat, scale_h, scale_w
 
@@ -555,7 +577,27 @@ def get_confi_multi(clus_labels, confi, label):
     confi = np.reshape(confi, -1)
     return np.mean(confi[mask])
 
+def permute_txt(fn):
+    with open(fn, 'r') as f:
+        contents = f.readlines()
+    all_length = len(contents) // 2
+    permute_contents = []
+    for i in range(all_length):
+        permute_contents.append([contents[2*i], contents[2*i+1]])
+    random.shuffle(permute_contents)
+    with open(fn, 'w') as f:
+        for item in permute_contents:
+            # print (item)
+            f.write(item[0])
+            f.write(item[1])
+
 if __name__ == '__main__':
+
+    fn = './data_txt_file/NUS_val.txt'
+    permute_txt(fn)
+    fn = './data_txt_file/NUS_train.txt'
+    permute_txt(fn)
+    # raise
     # pass
     #########################
     # test for data_loader

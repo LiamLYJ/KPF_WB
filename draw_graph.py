@@ -5,9 +5,10 @@ import seaborn as sns
 from utils import *
 from scipy.misc import imsave
 import os
+import re
 
 def save_ori(json_fn, ori_dir, save_fn, gain = None):
-    ori_img, ori_img_gt = get_original(ori_dir, json_fn, with_gt = True)
+    ori_img, ori_img_gt, _, _ = get_original(ori_dir, json_fn, with_gt = True)
 
     ori_img_gt = apply_gamma(ori_img_gt)
 
@@ -77,29 +78,154 @@ def apply_gamma(img, gamma = 2.2):
     return np.power(img, 1.0/ gamma)
 
 
-def draw_single(ori_dir, fn, label):
-    img_input = imread(os.path.join(ori_dir, fn))
-    img_global = apply_gain(img_input, global_gain)
-    img_gt = apply_gain(img_input, label)
-    img_global = apply_gamma(img_global)
+def draw_single(ori_dir, data_dir, fn):
+    log_file = os.path.join(data_dir, 'log.txt')
+    with open(log_file, 'r') as f:
+        contents = f.readlines()
+    for i in range(len(contents)):
+        if fn in contents[i]:
+            est = re.findall(r"[-+]?\d*\.\d+|\d+", contents[i+1])
+            gt = re.findall(r"[-+]?\d*\.\d+|\d+", contents[i+2])
+            error = re.findall(r"[-+]?\d*\.\d+|\d+", contents[i+3])
+            est = [float(item) for item in est]
+            gt = [float(item) for item in gt]
+            error = [float(item) for item in error]
+            # print (est, gt, error)
+    img_ori = imread(os.path.join(ori_dir, fn))
+    img_gt = apply_gain(img_ori, gt)
     img_gt = apply_gamma(img_gt)
-    imsave('./workspace/img_gt.png', img_gt)
-    imsave('./workspace/img_global.png', img_global)
+    img_est = apply_gain(img_ori, est)
+    img_est = apply_gamma(img_est)
+    imsave('./work_space_all/%s_gt.png'%(fn[:-4]), img_gt)
+    imsave('./work_space_all/%s_%f.png'%(fn[:-4] + '_est', error[0]), img_est)
+    imsave('./work_space_all/%s_input.png'%(fn[:-4]), img_ori)
+
+
+def draw_multi(ori_dir, data_dir, fn):
+    file_np = os.path.join(data_dir, fn + '.npy')
+    tmp = np.load(file_np)
+
+    size = tmp.shape[1]
+
+    img0 = tmp[:size,:,:]
+    img2 = tmp[size:,:,:]
+
+    img2 = np.clip(img2, 0,500)
+    print ('min ref:', np.min(img2))
+    print ('max ref:', np.max(img2))
+
+    json_file = os.path.join(data_dir, fn + '.json')
+
+    concat_original, concat_gt, scale_h, scale_w = get_original(data_dir= ori_dir, json_file = json_file, with_gt = True)
+    save_path = './work_space_all_ms'
+
+    with open(json_file, 'r') as json_f:
+        label1_2 = json.load(json_f)['label1_2']
+
+    gain_box, clus_img, clus_labels = gain_fitting(img0, img2, is_local = True, n_clusters =2, gamma = 2.0, with_clus = True)
+    errors = gain_fitting_mask(img0, img2, clus_labels, gt_label = label1_2 )
+    print (errors)
+
+    imsave(os.path.join(save_path, fn+'_clus.png'), clus_img)
+    big = apply_gain_box(concat_original, gain_box, scale_h, scale_w)
+    big = apply_gamma(big)
+    concat_gt = apply_gamma(concat_gt)
+    imsave(os.path.join(save_path, fn + '_est_%f_%f.png'%(errors[0], errors[1])), big)
+    imsave(os.path.join(save_path, fn + '_gt.png'), concat_gt)
+    imsave(os.path.join(save_path, fn + '_input.png'), concat_original)
 
 
 if __name__ == '__main__':
 
-    # vis_kernel()
-    # fn = '107MSDCF_DSC04083_109MSDCF_DSC06562.png'
-    # fn = '111MSDCF_DSC07977_111MSDCF_DSC07977.png'
-    # fn = '109MSDCF_DSC06534_111MSDCF_DSC07851.png'
-    # fn = '108MSDCF_DSC07506_111MSDCF_DSC07918.png'
-    fn = '105MSDCF_DSC03577_103MSDCF_DSC00361.png'
-    # fn = '100MSDCF_DSC09972.png'
-    # fn = '613_465.png'
-    # fn = '597_1132.png'
+    ######### draw multi #######################
+    # fn = ['100MSDCF_DSC09744_100MSDCF_DSC09775',  # big confi, small error
+    #     '100MSDCF_DSC09998_100MSDCF_DSC09930', '103MSDCF_DSC00681_103MSDCF_DSC00831', # big confi, big error
+    #     '104MSDCF_DSC03862_104MSDCF_DSC03812',  # small confi,  small error
+    #     '103MSDCF_DSC00681_104MSDCF_DSC03800'] # small confi, big error
 
-    # fn = '533_1162.png'
+    # ori_dir = './data/sony_1024'
+    # data_dir = './dump_sony_test_ms'
+    #
+
+    # fn = [
+    #     # '237_319',  # big confi, small error
+    # #     '865_575', # big confi, big error
+    # #     '25_21',  # small confi,  small error
+    #     '277_934' # small confi, big error
+    #     ]
+    # ori_dir = './data/cube_1024'
+    # data_dir = './dump_cube_test_ms'
+    #
+
+    # fn = [
+    #     # '',  # big confi, small error
+        # 'FujifilmXM1_0016_OlympusEPL6_0006', # big confi, big error
+        # '',  # small confi,  small error
+        # 'SonyA57_0048_SonyA57_0033' # small confi, big error
+        # ]
+    # fn = ['PanasonicGX1_0189_PanasonicGX1_0160']
+    # fn = ['FujifilmXM1_0058_FujifilmXM1_0047']
+    # ori_dir = './data/nus_1024'
+    # data_dir = './dump_nus_test_ms'
+    # data_dir = './dump_nus_train_ms'
+
+
+    fn = [
+        # '',  # big confi, small error
+        'IMG_0845_IMG_0378', # big confi, big error
+        'IMG_0284_IMG_0598',  # small confi,  small error
+        # 'IMG_0424_IMG_0870' # small confi, big error
+        ]
+    ori_dir = './data/gehler_1024'
+    data_dir = './dump_gehler_test_ms'
+    # data_dir = './dump_gehler_train_ms'
+    # fn = ['IMG_0480_IMG_0621']
+
+
+    for item in fn:
+        draw_multi(ori_dir, data_dir, item)
+
+    raise
+    ###############################################################
+
+
+    ##### draw single ##########################
+    # fn = ['100MSDCF_DSC09722.png', '100MSDCF_DSC09748.png',  # big confi, small error
+    #     '104MSDCF_DSC03862.png', '103MSDCF_DSC00532.png' , '103MSDCF_DSC00831.png', # big confi, big error
+    #     '104MSDCF_DSC03856.png', '104MSDCF_DSC03914.png',  # small confi,  small error
+    #     '104MSDCF_DSC03800.png',  '104MSDCF_DSC03812.png',] # small confi, big error
+    #
+    # ori_dir = './data/sony_1024'
+    # data_dir = './dump_sony_test'
+
+    # fn = [ '819.png',  # big confi, small error
+    #      '865.png', # big confi, big error
+    #      '746.png',  # small confi,  small error
+    #      '934.png',] # small confi, big error
+    #
+    # ori_dir = './data/cube_1024'
+    # data_dir = './dump_cube_test'
+
+    # fn = [ 'SamsungNX2000_0010.PNG',  # big confi, small error
+    #      'Canon1DsMkIII_0001.PNG', # big confi, big error
+    #      'Canon1DsMkIII_0016.PNG',  # small confi,  small error
+    #      'SamsungNX2000_0006.PNG',] # small confi, big error
+    #
+    # ori_dir = './data/nus_1024'
+    # data_dir = './dump_nus_test'
+
+    # fn = [ 'IMG_0307.png',  # big confi, small error
+    #      'IMG_0324.png', # big confi, big error
+    #      'IMG_0370.png',  # small confi,  small error
+    #      'IMG_0298.png',] # small confi, big error
+    #
+    # ori_dir = './data/gehler_1024'
+    # data_dir = './dump_gehler_test'
+    #
+    # for item in fn:
+    #     draw_single(ori_dir, data_dir, item)
+    # raise
+    #############################################
 
     img_tmp = imread(fn[:-4] + '_big.png')
     img_tmp = apply_gamma(img_tmp)
@@ -107,12 +233,6 @@ if __name__ == '__main__':
     img_tmp = imread(fn[:-4] + '_big_pure.png')
     img_tmp = apply_gamma(img_tmp)
     imsave(os.path.join('./workspace',fn[:-4] + '_big_pure.png'), img_tmp)
-    ori_dir = '../gogogo/sony_1024'
-    # ori_dir = '../gogogo/cube_1024'
-    data_dir = './dump_sony_train_ms'
-    # data_dir = './dump_sony_train'
-    # data_dir = './dump_cube_train_ms'
-    # data_dir = './dump_cube_test_ms'
     json_fn = os.path.join(data_dir, fn[:-4] + '.json')
     global_gain = cut_and_save(fn, data_dir)
 

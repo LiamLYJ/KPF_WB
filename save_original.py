@@ -11,52 +11,13 @@ from scipy.misc import imsave
 
 if __name__ == '__main__':
 
-    # data_dir = '/home/lyj/Downloads/Sony/preprocessed'
-    # dir = './tmp_save_ex'
-    # fn = '111MSDCF_DSC07730_108MSDCF_DSC07506'
-    # fn = '108MSDCF_DSC07087_111MSDCF_DSC07977'
-    # fn = '111MSDCF_DSC07750_109MSDCF_DSC06798'
-    # fn = '112MSDCF_DSC08800_111MSDCF_DSC07916'
-    # fn = '105MSDCF_DSC03577_112MSDCF_DSC09082'
-    # fn = '106MSDCF_DSC04946_106MSDCF_DSC04946'
+    data_dir = './data/nus_1024'
+    # dir = './dump_nus_train_ms'
+    # fn = 'SonyA57_0132_Canon1DsMkIII_0175'
+    # fn = 'Canon600D_0136_SamsungNX2000_0028'
 
-
-    # dir = './tmp_save_64'
-    # fn = '105MSDCF_DSC03577_111MSDCF_DSC07998'
-    # fn = '106MSDCF_DSC05012_108MSDCF_DSC07138'
-    # fn = '107MSDCF_DSC04083_109MSDCF_DSC06778'
-    # fn = '107MSDCF_DSC04100_111MSDCF_DSC07918'
-
-    # data_dir = '../gogogo/cube_1024'
-    #
-    # dir = './dump_cube_train_ms'
-    # fn = '39_910'
-
-    # dir = './dump_cube_test_ms'
-    # fn = '533_1162'
-
-    data_dir = '../gogogo/sony_1024'
-    # dir = './dump_sony_64_train_ms'
-    dir = './dump_sony_train_ms'
-    # fn = '106MSDCF_DSC05108_109MSDCF_DSC06733'
-    # fn = '107MSDCF_DSC04083_109MSDCF_DSC06562'
-    # fn = '108MSDCF_DSC07506_111MSDCF_DSC07918'
-    # fn = '111MSDCF_DSC07977_111MSDCF_DSC07977'
-    # fn = '109MSDCF_DSC06534_111MSDCF_DSC07851'
-    # fn = '105MSDCF_DSC03577_103MSDCF_DSC00361'
-
-    # dir = './dump_sony_train'
-    # fn = '100MSDCF_DSC09972'
-
-
-    data_dir = '../gogogo/gehler_1024'
-    dir = './dump_gehler_train_ms'
-    fn = 'IMG_0603_IMG_0303'
-
-    # data_dir = '../gogogo/cube_1024'
-    # dir = './dump_cube_train_ms'
-    # # fn = '613_465'
-    # fn = '597_1132'
+    fn = 'SonyA57_0004_Canon600D_0067'
+    dir = './dump_nus_train_ms'
 
     try:
         file_np = os.path.join(dir, fn + '.npy')

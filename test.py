@@ -17,16 +17,19 @@ flags.DEFINE_integer('batch_size', 20, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('ckpt_path', './logs_cube_ex/',
+flags.DEFINE_string('ckpt_path', './logs_nus_ex/',
                     'Directory where to write training.')
-flags.DEFINE_string('save_dir', 'dump_cube_train', 'Directoru to save test results')
-# flags.DEFINE_string('save_dir', './tmp', 'Directoru to save test results')
-flags.DEFINE_string('dataset_dir', './data/cube', '')
-flags.DEFINE_string('dataset_file_name', './data_txt_file/cube_train.txt','')
+flags.DEFINE_string('save_dir', 'dump_nus_test', 'Directoru to save test results')
+# flags.DEFINE_string('save_dir', 'None', 'Directoru to save test results')
+flags.DEFINE_string('dataset_dir', './data/nus', '')
+# flags.DEFINE_string('dataset_dir', './data/gehler', '')
+# flags.DEFINE_string('dataset_file_name', './data_txt_file/cube_val.txt','')
+# flags.DEFINE_string('dataset_file_name', './data_txt_file/gehler_val_only_one.txt','')
+flags.DEFINE_string('dataset_file_name', './data_txt_file/NUS_val.txt','')
 flags.DEFINE_integer('final_K', 5, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 
-flags.DEFINE_integer('total_test_num', 100, 'num of test file')
+flags.DEFINE_integer('total_test_num', 150, 'num of test file')
 flags.DEFINE_boolean('write_sum', False, 'if write summay in test mode')
 flags.DEFINE_boolean('use_ms', False, 'if use multi_source trianing')
 FLAGS = flags.FLAGS
