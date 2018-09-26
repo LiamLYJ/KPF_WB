@@ -16,8 +16,11 @@ if __name__ == '__main__':
     # fn = 'SonyA57_0132_Canon1DsMkIII_0175'
     # fn = 'Canon600D_0136_SamsungNX2000_0028'
 
-    fn = 'SonyA57_0004_Canon600D_0067'
-    dir = './dump_nus_train_ms'
+    # fn = 'SonyA57_0031_FujifilmXM1_0033'
+    # fn = 'OlympusEPL6_0092_SamsungNX2000_0051'
+    # fn = 'OlympusEPL6_0037_NikonD5200_0001'
+    fn = 'SonyA57_0048_SonyA57_0033'
+    dir = './dump_nus_test_ms'
 
     try:
         file_np = os.path.join(dir, fn + '.npy')
@@ -48,11 +51,12 @@ if __name__ == '__main__':
     pure = utils.apply_gain_box(concat_original, gain_box_pure, scale_h, scale_w)
     imsave(fn+'_big_pure.png', pure)
 
-    gain_box, clus_img, clus_labels = utils.gain_fitting(img0, img2, is_local = True, n_clusters =2, gamma = 2.0, with_clus = True)
-    imsave(fn+'_clus.png', clus_img)
-    big = utils.apply_gain_box(concat_original, gain_box, scale_h, scale_w)
-    imsave(fn + '_big.png', big)
+    # gain_box, clus_img, clus_labels = utils.gain_fitting(img0, img2, is_local = True, n_clusters =2, gamma = 2.0, with_clus = True)
+    # imsave(fn+'_clus.png', clus_img)
+    # big = utils.apply_gain_box(concat_original, gain_box, scale_h, scale_w)
+    # imsave(fn + '_big.png', big)
 
     global_gain = utils.gain_fitting(img0, img2, is_local = False)
     global_big = utils.apply_gain(concat_original, global_gain)
+    global_big = np.power(global_big, 1.0/ 2.2)
     imsave(fn + '_global_big.png', global_big)

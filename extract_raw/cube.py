@@ -111,6 +111,11 @@ def make_txt_file(data_path, gt_file, save_dir = None):
                 Gain_G = g_gain / g_gain
                 Gain_B = g_gain / b_gain
 
+                gain_norm = np.linalg.norm(np.array([Gain_R, Gain_G, Gain_B]))
+                Gain_R = Gain_R / gain_norm
+                Gain_G = Gain_G / gain_norm
+                Gain_B = Gain_B / gain_norm
+
                 if count < val_num:
                     count += 1
                     write_file = val_file

@@ -83,6 +83,12 @@ def make_txt_file(img_list, mat, save_dir = None):
                 Gain_R = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][0])
                 Gain_G = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][1])
                 Gain_B = float(np.max(mat['real_rgb'][index])) / float(mat['real_rgb'][index][2])
+
+                gain_norm = np.linalg.norm(np.array([Gain_R, Gain_G, Gain_B]))
+                Gain_R = Gain_R / gain_norm
+                Gain_G = Gain_G / gain_norm
+                Gain_B = Gain_B / gain_norm
+
                 if count < val_num:
                     count += 1
                     write_file = val_file

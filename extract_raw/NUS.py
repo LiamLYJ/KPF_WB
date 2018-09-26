@@ -112,6 +112,11 @@ def make_txt_file(data_path, save_dir = None):
                     Gain_G = illum[1] / illum[1]
                     Gain_B = illum[1] / illum[2]
 
+                    gain_norm = np.linalg.norm(np.array([Gain_R, Gain_G, Gain_B]))
+                    Gain_R = Gain_R / gain_norm
+                    Gain_G = Gain_G / gain_norm
+                    Gain_B = Gain_B / gain_norm
+
                     try:
                         processed_raw = load_image(fn, extras['darkness_level'], extras['saturation_level'])
                     except:

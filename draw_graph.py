@@ -183,10 +183,14 @@ if __name__ == '__main__':
     # # fn = ['IMG_0480_IMG_0621']
     #
     #
-    # for item in fn:
-    #     draw_multi(ori_dir, data_dir, item)
-    #
-    # raise
+    # fn = ['OlympusEPL6_0037_NikonD5200_0001','SonyA57_0031_FujifilmXM1_0033','FujifilmXM1_0022_SamsungNX2000_0056']
+    fn = ['SonyA57_0060_Canon600D_0034']
+    ori_dir = './data/nus_1024'
+    data_dir = './dump_nus_test_ms'
+    for item in fn:
+        draw_multi(ori_dir, data_dir, item)
+
+    raise
     ###############################################################
 
 
