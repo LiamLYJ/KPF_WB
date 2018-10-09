@@ -28,7 +28,7 @@ flags.DEFINE_integer('final_K', 5, 'size of filter')
 # flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_integer('input_ch', 3, 'size of input channel')
-flags.DEFINE_integer('save_iter', 5, 'save iter inter')
+flags.DEFINE_integer('save_iter', 500, 'save iter inter')
 flags.DEFINE_integer('sum_iter', 5, 'sum iter inter')
 flags.DEFINE_float('img_loss_weight', 1.0, 'weight for img_loss')
 flags.DEFINE_float('filts_reg_weight', 0.001, 'weight for filts regularation')
@@ -165,7 +165,7 @@ def train(FLAGS):
             if i_step % 5 == 0:
                 print ('Step', i, 'loss =', loss)
 
-            if i % FLAGS.save_iter == 0:
+            if i % FLAGS.save_iter == 0 and i != 0:
                 print ('Saving ckpt at step', i)
                 saver.save(sess, FLAGS.train_log_dir + 'model.ckpt', global_step=i)
                 sum_val_ = sess.run(sum_val)
