@@ -34,8 +34,10 @@ def convolve_subset(inputs, ch, N, D=3):
 
 
 def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2',
-                  equiv=False, separable=False, bonus=False, ):
-    with tf.variable_scope(scope):
+                  equiv=False, separable=False, bonus=False, reuse = False, ):
+    with tf.variable_scope(scope) as net_scope:
+        if reuse:
+            net_scope.reuse_variables()
         initial_W = input_stack.get_shape().as_list()[-1]
         inputs = input_stack
         if not separable:
@@ -101,7 +103,7 @@ def convolve_net(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'
                     inputs,
                     [tf.shape(input_stack)[1], tf.shape(input_stack)[2]],
                     method=tf.image.ResizeMethod.BILINEAR)
-            # inputs = tf.nn.relu(inputs)        
+            # inputs = tf.nn.relu(inputs)
         return inputs
 
 def convolve_net_v1(input_stack,  final_K, final_W, ch0=64, N=4, D=3, scope='cnet2'):

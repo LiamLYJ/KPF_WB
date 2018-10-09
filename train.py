@@ -75,6 +75,8 @@ def train(FLAGS):
         filts = net.convolve_net(input_image, final_K, final_W, ch0=64,
                                  N=N_size, D=3,
                       scope='get_filted', separable=False, bonus=False)
+        filts_val = net.convolve_net(input_image_val, final_K, final_W, ch0 = 64,
+                                N=N_size, D=3, reuse = True)
     gs = tf.Variable(0, name='global_step', trainable=False)
 
     predict_image = convolve(input_image, filts, final_K, final_W)
@@ -98,7 +100,7 @@ def train(FLAGS):
     total_loss = slim.losses.get_total_loss()
 
     # check val loss
-    predict_image_val = convolve(input_image_val, filts, final_K, final_W)
+    predict_image_val = convolve(input_image_val, filts_val, final_K, final_W)
     predict_image_val_srgb = sRGBforward(predict_image_val)
     gt_image_val_srgb = sRGBforward(gt_image_val)
     val_loss = basic_img_loss(gt_image_val_srgb, predict_image_val_srgb)
