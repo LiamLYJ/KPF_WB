@@ -15,11 +15,11 @@ flags.DEFINE_integer('batch_size', 32, 'The number of images in each batch.')
 flags.DEFINE_integer(
     'patch_size', 128, 'The height/width of images in each batch.')
 
-flags.DEFINE_string('train_log_dir', './logs_sony_ex/',
+flags.DEFINE_string('train_log_dir', './logs_cube_ex_fix/',
                     'Directory where to write training.')
-flags.DEFINE_string('dataset_dir', './data/sony/', '')
-flags.DEFINE_string('dataset_file_name_train', './data_txt_file/file_train.txt','train_files')
-flags.DEFINE_string('dataset_file_name_val', './data_txt_file/file_val.txt','val_files')
+flags.DEFINE_string('dataset_dir', './data/cube/', '')
+flags.DEFINE_string('dataset_file_name_train', './data_txt_file/cube_train.txt','train_files')
+flags.DEFINE_string('dataset_file_name_val', './data_txt_file/cube_val.txt','val_files')
 flags.DEFINE_float('learning_rate', .0001, 'The learning rate')
 
 flags.DEFINE_integer('max_number_of_steps', 100000000,
@@ -28,7 +28,7 @@ flags.DEFINE_integer('final_K', 5, 'size of filter')
 # flags.DEFINE_integer('final_K', 1, 'size of filter')
 flags.DEFINE_integer('final_W', 3, 'size of output channel')
 flags.DEFINE_integer('input_ch', 3, 'size of input channel')
-flags.DEFINE_integer('save_iter', 500, 'save iter inter')
+flags.DEFINE_integer('save_iter', 5, 'save iter inter')
 flags.DEFINE_integer('sum_iter', 5, 'sum iter inter')
 flags.DEFINE_float('img_loss_weight', 1.0, 'weight for img_loss')
 flags.DEFINE_float('filts_reg_weight', 0.001, 'weight for filts regularation')
@@ -76,7 +76,8 @@ def train(FLAGS):
                                  N=N_size, D=3,
                       scope='get_filted', separable=False, bonus=False)
         filts_val = net.convolve_net(input_image_val, final_K, final_W, ch0 = 64,
-                                N=N_size, D=3, reuse = True)
+                                N=N_size, D=3,
+                        scope = 'get_filted', separable=False, bonus=False, reuse = True)
     gs = tf.Variable(0, name='global_step', trainable=False)
 
     predict_image = convolve(input_image, filts, final_K, final_W)
