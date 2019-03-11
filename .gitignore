@@ -12,6 +12,7 @@ __pycache__/
 *.pyc
 *.jpg
 *.png
+!readme_src/examples.png
 *.pkl
 .DS_Store
 *.json
